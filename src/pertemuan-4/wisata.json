@@ -1,0 +1,502 @@
+[
+  {
+    "id": 1,
+    "name": "Pantai Kuta",
+    "description": "Pantai ikonik di Bali yang terkenal dengan ombak surfing dan pemandangan sunset yang memukau. Salah satu destinasi wisata paling populer di Indonesia.",
+    "image": "https://picsum.photos/seed/kuta-beach/600/400",
+    "location": {
+      "province": "Bali",
+      "city": "Badung",
+      "coordinates": { "lat": -8.7184, "lng": 115.1686 }
+    },
+    "details": {
+      "type": "Pantai",
+      "entryFee": 0,
+      "openHours": "24 Jam",
+      "rating": 4.6
+    },
+    "contact": {
+      "phone": "0361-751361",
+      "email": "info@kutabali.com",
+      "website": "https://www.kutabali.com"
+    },
+    "facilities": ["Parkir", "Toilet Umum", "Restoran", "Penginapan", "Penyewaan Papan Selancar"],
+    "tags": ["Pantai", "Surfing", "Sunset", "Backpacker"],
+    "status": "active"
+  },
+  {
+    "id": 2,
+    "name": "Candi Borobudur",
+    "description": "Candi Buddha terbesar di dunia yang dibangun pada abad ke-8. Merupakan Situs Warisan Dunia UNESCO dan salah satu keajaiban dunia.",
+    "image": "https://picsum.photos/seed/borobudur/600/400",
+    "location": {
+      "province": "Jawa Tengah",
+      "city": "Magelang",
+      "coordinates": { "lat": -7.6079, "lng": 110.2038 }
+    },
+    "details": {
+      "type": "Candi",
+      "entryFee": 50000,
+      "openHours": "06:00 - 17:00",
+      "rating": 4.8
+    },
+    "contact": {
+      "phone": "0293-788266",
+      "email": "info@borobudurpark.com",
+      "website": "https://www.borobudurpark.com"
+    },
+    "facilities": ["Parkir Luas", "Museum", "Restoran", "Toko Souvenir", "Tour Guide"],
+    "tags": ["Candi", "Sejarah", "UNESCO", "Budaya"],
+    "status": "active"
+  },
+  {
+    "id": 3,
+    "name": "Raja Ampat",
+    "description": "Surga bawah laut dengan keanekaragaman hayati laut tertinggi di dunia. Memiliki lebih dari 1.500 spesies ikan dan 600 jenis terumbu karang.",
+    "image": "https://picsum.photos/seed/raja-ampat/600/400",
+    "location": {
+      "province": "Papua Barat",
+      "city": "Raja Ampat",
+      "coordinates": { "lat": -0.2337, "lng": 130.5221 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 1000000,
+      "openHours": "Sepanjang Tahun",
+      "rating": 4.9
+    },
+    "contact": {
+      "phone": "0951-22222",
+      "email": "tourism@rajaampatregency.go.id",
+      "website": "https://www.rajaampatregency.go.id"
+    },
+    "facilities": ["Resort", "Dive Center", "Snorkeling Equipment", "Boat Charter"],
+    "tags": ["Diving", "Snorkeling", "Alam", "Kepulauan"],
+    "status": "active"
+  },
+  {
+    "id": 4,
+    "name": "Gunung Bromo",
+    "description": "Gunung berapi aktif yang menawarkan pemandangan sunrise spektakuler di Taman Nasional Bromo Tengger Semeru. Lautan pasir seluas 5.250 hektar.",
+    "image": "https://picsum.photos/seed/bromo/600/400",
+    "location": {
+      "province": "Jawa Timur",
+      "city": "Probolinggo",
+      "coordinates": { "lat": -7.9425, "lng": 112.9530 }
+    },
+    "details": {
+      "type": "Gunung",
+      "entryFee": 29000,
+      "openHours": "24 Jam",
+      "rating": 4.7
+    },
+    "contact": {
+      "phone": "0335-541119",
+      "email": "info@tnbts.or.id",
+      "website": "https://www.tnbromotenggersemeru.org"
+    },
+    "facilities": ["Jeep Rental", "Penginapan", "Warung Makan", "Parkir", "Penyewaan Kuda"],
+    "tags": ["Gunung", "Sunrise", "Alam", "Petualangan"],
+    "status": "active"
+  },
+  {
+    "id": 5,
+    "name": "Danau Toba",
+    "description": "Danau vulkanik terbesar di dunia dengan luas 1.145 km². Di tengahnya terdapat Pulau Samosir yang menjadi pusat budaya Batak.",
+    "image": "https://picsum.photos/seed/danau-toba/600/400",
+    "location": {
+      "province": "Sumatera Utara",
+      "city": "Toba Samosir",
+      "coordinates": { "lat": 2.6833, "lng": 98.8667 }
+    },
+    "details": {
+      "type": "Danau",
+      "entryFee": 10000,
+      "openHours": "08:00 - 18:00",
+      "rating": 4.5
+    },
+    "contact": {
+      "phone": "0625-41369",
+      "email": "danautoba@sumut.go.id",
+      "website": "https://www.tobatourism.com"
+    },
+    "facilities": ["Ferry", "Resort", "Restoran", "Toko Souvenir", "Perahu Wisata"],
+    "tags": ["Danau", "Budaya", "Batak", "Alam"],
+    "status": "active"
+  },
+  {
+    "id": 6,
+    "name": "Kawah Ijen",
+    "description": "Kawah vulkanik dengan fenomena api biru (blue fire) yang langka di dunia. Terdapat danau asam terbesar di dunia berwarna toska.",
+    "image": "https://picsum.photos/seed/kawah-ijen/600/400",
+    "location": {
+      "province": "Jawa Timur",
+      "city": "Banyuwangi",
+      "coordinates": { "lat": -8.0580, "lng": 114.2420 }
+    },
+    "details": {
+      "type": "Gunung",
+      "entryFee": 15000,
+      "openHours": "01:00 - 12:00",
+      "rating": 4.7
+    },
+    "contact": {
+      "phone": "0333-421087",
+      "email": "kawahijen@banyuwangi.go.id",
+      "website": "https://www.kawahijen.id"
+    },
+    "facilities": ["Pemandu Wisata", "Warung Makan", "Parkir", "Penyewaan Masker"],
+    "tags": ["Gunung", "Api Biru", "Alam", "Petualangan"],
+    "status": "active"
+  },
+  {
+    "id": 7,
+    "name": "Labuan Bajo",
+    "description": "Gerbang menuju Taman Nasional Komodo dengan dragon komodo, pantai pink, dan pulau-pulau eksotis di Flores, Nusa Tenggara Timur.",
+    "image": "https://picsum.photos/seed/labuan-bajo/600/400",
+    "location": {
+      "province": "Nusa Tenggara Timur",
+      "city": "Manggarai Barat",
+      "coordinates": { "lat": -8.4960, "lng": 119.8804 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 150000,
+      "openHours": "08:00 - 17:00",
+      "rating": 4.8
+    },
+    "contact": {
+      "phone": "0385-41404",
+      "email": "info@labuanbajotourism.com",
+      "website": "https://www.labuanbajourism.com"
+    },
+    "facilities": ["Boat Charter", "Dive Center", "Resort", "Restoran", "Airport"],
+    "tags": ["Komodo", "Diving", "Alam", "Kepulauan"],
+    "status": "active"
+  },
+  {
+    "id": 8,
+    "name": "Candi Prambanan",
+    "description": "Kompleks candi Hindu terbesar di Indonesia yang dibangun pada abad ke-9 dan didedikasikan untuk Trimurti: Brahma, Wisnu, dan Siwa.",
+    "image": "https://picsum.photos/seed/prambanan/600/400",
+    "location": {
+      "province": "Daerah Istimewa Yogyakarta",
+      "city": "Sleman",
+      "coordinates": { "lat": -7.7520, "lng": 110.4914 }
+    },
+    "details": {
+      "type": "Candi",
+      "entryFee": 50000,
+      "openHours": "06:00 - 17:00",
+      "rating": 4.7
+    },
+    "contact": {
+      "phone": "0274-496401",
+      "email": "info@borobudurpark.com",
+      "website": "https://www.borobudurpark.com/prambanan"
+    },
+    "facilities": ["Parkir", "Museum", "Restoran", "Toko Souvenir", "Pertunjukan Sendratari"],
+    "tags": ["Candi", "Sejarah", "UNESCO", "Hindu"],
+    "status": "active"
+  },
+  {
+    "id": 9,
+    "name": "Pantai Pink",
+    "description": "Pantai langka dengan pasir berwarna pink yang terbentuk dari pecahan terumbu karang merah. Satu dari tujuh pantai berpasir pink di dunia.",
+    "image": "https://picsum.photos/seed/pink-beach/600/400",
+    "location": {
+      "province": "Nusa Tenggara Timur",
+      "city": "Manggarai Barat",
+      "coordinates": { "lat": -8.5421, "lng": 119.5602 }
+    },
+    "details": {
+      "type": "Pantai",
+      "entryFee": 0,
+      "openHours": "07:00 - 17:00",
+      "rating": 4.6
+    },
+    "contact": {
+      "phone": "0385-41300",
+      "email": "pinkbeach@tnkomodo.go.id",
+      "website": "https://www.tnkomodo.go.id"
+    },
+    "facilities": ["Snorkeling Equipment", "Pemandu Wisata", "Perahu"],
+    "tags": ["Pantai", "Snorkeling", "Alam", "Langka"],
+    "status": "active"
+  },
+  {
+    "id": 10,
+    "name": "Tana Toraja",
+    "description": "Daerah pegunungan dengan tradisi pemakaman dan upacara adat yang unik. Terkenal dengan rumah adat Tongkonan dan ritual Rambu Solo.",
+    "image": "https://picsum.photos/seed/toraja/600/400",
+    "location": {
+      "province": "Sulawesi Selatan",
+      "city": "Tana Toraja",
+      "coordinates": { "lat": -3.0458, "lng": 119.8206 }
+    },
+    "details": {
+      "type": "Budaya",
+      "entryFee": 25000,
+      "openHours": "08:00 - 17:00",
+      "rating": 4.6
+    },
+    "contact": {
+      "phone": "0423-22011",
+      "email": "info@torajatourism.com",
+      "website": "https://www.torajatourism.com"
+    },
+    "facilities": ["Penginapan", "Pemandu Wisata", "Restoran", "Toko Souvenir"],
+    "tags": ["Budaya", "Adat", "Sejarah", "Pegunungan"],
+    "status": "active"
+  },
+  {
+    "id": 11,
+    "name": "Pulau Belitung",
+    "description": "Pulau eksotis dengan pantai berbatu granit raksasa yang unik, air laut jernih berwarna biru toska, dan film Laskar Pelangi yang terkenal.",
+    "image": "https://picsum.photos/seed/belitung/600/400",
+    "location": {
+      "province": "Kepulauan Bangka Belitung",
+      "city": "Belitung",
+      "coordinates": { "lat": -2.7716, "lng": 107.6274 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 0,
+      "openHours": "Sepanjang Hari",
+      "rating": 4.7
+    },
+    "contact": {
+      "phone": "0719-22100",
+      "email": "tourism@belitungkab.go.id",
+      "website": "https://www.belitungtourism.com"
+    },
+    "facilities": ["Boat Charter", "Resort", "Restoran", "Toko Souvenir", "Airport"],
+    "tags": ["Pantai", "Kepulauan", "Alam", "Fotografi"],
+    "status": "active"
+  },
+  {
+    "id": 12,
+    "name": "Ubud",
+    "description": "Pusat seni dan budaya Bali yang dikelilingi sawah terasering, hutan, dan pura-pura Hindu bersejarah. Tempat meditasi dan retreat spiritual.",
+    "image": "https://picsum.photos/seed/ubud-bali/600/400",
+    "location": {
+      "province": "Bali",
+      "city": "Gianyar",
+      "coordinates": { "lat": -8.5069, "lng": 115.2625 }
+    },
+    "details": {
+      "type": "Budaya",
+      "entryFee": 15000,
+      "openHours": "08:00 - 21:00",
+      "rating": 4.8
+    },
+    "contact": {
+      "phone": "0361-975285",
+      "email": "info@ubud.id",
+      "website": "https://www.ubud.id"
+    },
+    "facilities": ["Gallery Seni", "Restoran", "Spa", "Penginapan", "Kelas Memasak"],
+    "tags": ["Seni", "Budaya", "Spiritual", "Sawah"],
+    "status": "active"
+  },
+  {
+    "id": 13,
+    "name": "Gili Trawangan",
+    "description": "Pulau kecil tanpa kendaraan bermotor di Lombok yang dikenal dengan pantai berpasir putih, kehidupan bawah laut, dan suasana pesta.",
+    "image": "https://picsum.photos/seed/gili-trawangan/600/400",
+    "location": {
+      "province": "Nusa Tenggara Barat",
+      "city": "Lombok Utara",
+      "coordinates": { "lat": -8.3522, "lng": 116.0318 }
+    },
+    "details": {
+      "type": "Pantai",
+      "entryFee": 0,
+      "openHours": "24 Jam",
+      "rating": 4.6
+    },
+    "contact": {
+      "phone": "0370-640527",
+      "email": "gilitrawangan@lombok.go.id",
+      "website": "https://www.gilislands.com"
+    },
+    "facilities": ["Dive Center", "Restoran", "Bar", "Penginapan", "Penyewaan Sepeda"],
+    "tags": ["Pantai", "Diving", "Island", "Backpacker"],
+    "status": "active"
+  },
+  {
+    "id": 14,
+    "name": "Keraton Yogyakarta",
+    "description": "Istana resmi Kesultanan Yogyakarta yang masih berfungsi hingga kini. Menjadi pusat budaya Jawa dan menyimpan koleksi seni keraton.",
+    "image": "https://picsum.photos/seed/keraton-jogja/600/400",
+    "location": {
+      "province": "Daerah Istimewa Yogyakarta",
+      "city": "Yogyakarta",
+      "coordinates": { "lat": -7.8053, "lng": 110.3644 }
+    },
+    "details": {
+      "type": "Sejarah",
+      "entryFee": 15000,
+      "openHours": "09:00 - 14:00",
+      "rating": 4.5
+    },
+    "contact": {
+      "phone": "0274-373721",
+      "email": "info@kratonjogja.id",
+      "website": "https://kratonjogja.id"
+    },
+    "facilities": ["Pemandu Wisata", "Museum", "Toko Souvenir", "Pertunjukan Budaya"],
+    "tags": ["Sejarah", "Budaya", "Jawa", "Keraton"],
+    "status": "active"
+  },
+  {
+    "id": 15,
+    "name": "Wakatobi",
+    "description": "Taman Nasional bahari dengan ekosistem terumbu karang terlengkap di dunia. Surga bagi penyelam dengan visibilitas bawah laut yang luar biasa.",
+    "image": "https://picsum.photos/seed/wakatobi/600/400",
+    "location": {
+      "province": "Sulawesi Tenggara",
+      "city": "Wakatobi",
+      "coordinates": { "lat": -5.4832, "lng": 123.5802 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 200000,
+      "openHours": "Sepanjang Tahun",
+      "rating": 4.9
+    },
+    "contact": {
+      "phone": "0403-2121080",
+      "email": "tnwakatobi@menlhk.go.id",
+      "website": "https://www.tnwakatobi.go.id"
+    },
+    "facilities": ["Dive Center", "Resort Mewah", "Snorkeling", "Boat Charter"],
+    "tags": ["Diving", "Snorkeling", "Alam", "Kepulauan"],
+    "status": "active"
+  },
+  {
+    "id": 16,
+    "name": "Nusa Penida",
+    "description": "Pulau di tenggara Bali dengan tebing-tebing dramatis, pantai tersembunyi, dan spot snorkeling dengan Manta Ray. Instagram-worthy spot favorit.",
+    "image": "https://picsum.photos/seed/nusa-penida/600/400",
+    "location": {
+      "province": "Bali",
+      "city": "Klungkung",
+      "coordinates": { "lat": -8.7283, "lng": 115.5443 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 0,
+      "openHours": "07:00 - 18:00",
+      "rating": 4.7
+    },
+    "contact": {
+      "phone": "0366-23456",
+      "email": "info@nusapenida.id",
+      "website": "https://www.nusapenida.id"
+    },
+    "facilities": ["Boat Charter", "Penginapan", "Restoran", "Scooter Rental", "Snorkeling"],
+    "tags": ["Pantai", "Fotografi", "Alam", "Snorkeling"],
+    "status": "active"
+  },
+  {
+    "id": 17,
+    "name": "Gunung Rinjani",
+    "description": "Gunung berapi tertinggi kedua di Indonesia dengan kaldera dan danau Segara Anak yang memukau. Trek favorit para pendaki Asia Tenggara.",
+    "image": "https://picsum.photos/seed/rinjani/600/400",
+    "location": {
+      "province": "Nusa Tenggara Barat",
+      "city": "Lombok Timur",
+      "coordinates": { "lat": -8.4131, "lng": 116.4678 }
+    },
+    "details": {
+      "type": "Gunung",
+      "entryFee": 150000,
+      "openHours": "Musim Kering (Apr-Nov)",
+      "rating": 4.8
+    },
+    "contact": {
+      "phone": "0376-21525",
+      "email": "tnrinjani@menlhk.go.id",
+      "website": "https://www.tnrinjani.net"
+    },
+    "facilities": ["Pemandu Trek", "Porter", "Basecamp", "Penyewaan Tenda"],
+    "tags": ["Gunung", "Pendakian", "Alam", "Petualangan"],
+    "status": "active"
+  },
+  {
+    "id": 18,
+    "name": "Taman Mini Indonesia Indah",
+    "description": "Taman budaya di Jakarta yang menampilkan miniatur Indonesia lengkap dengan rumah adat 34 provinsi, danau buatan, dan berbagai museum.",
+    "image": "https://picsum.photos/seed/tmii-jakarta/600/400",
+    "location": {
+      "province": "DKI Jakarta",
+      "city": "Jakarta Timur",
+      "coordinates": { "lat": -6.3024, "lng": 106.8953 }
+    },
+    "details": {
+      "type": "Budaya",
+      "entryFee": 25000,
+      "openHours": "08:00 - 20:00",
+      "rating": 4.3
+    },
+    "contact": {
+      "phone": "021-8409214",
+      "email": "info@tamanmini.com",
+      "website": "https://www.tamanmini.com"
+    },
+    "facilities": ["Museum", "Restoran", "Taman Bermain", "Kereta Gantung", "Parkir Luas"],
+    "tags": ["Budaya", "Edukasi", "Keluarga", "Museum"],
+    "status": "active"
+  },
+  {
+    "id": 19,
+    "name": "Pulau Komodo",
+    "description": "Rumah asli Komodo, kadal terbesar di dunia. Taman Nasional Komodo juga menawarkan pantai indah, snorkeling, dan diving kelas dunia.",
+    "image": "https://picsum.photos/seed/komodo-island/600/400",
+    "location": {
+      "province": "Nusa Tenggara Timur",
+      "city": "Manggarai Barat",
+      "coordinates": { "lat": -8.5496, "lng": 119.4888 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 150000,
+      "openHours": "07:30 - 17:00",
+      "rating": 4.8
+    },
+    "contact": {
+      "phone": "0385-41302",
+      "email": "tnkomodo@menlhk.go.id",
+      "website": "https://www.tnkomodo.go.id"
+    },
+    "facilities": ["Ranger Guide", "Snorkeling", "Boat Charter", "Camping Area"],
+    "tags": ["Komodo", "Alam", "Kepulauan", "Satwa Liar"],
+    "status": "active"
+  },
+  {
+    "id": 20,
+    "name": "Derawan Islands",
+    "description": "Kepulauan eksotis di Kalimantan Timur dengan penyu hijau bertelur di pantai, ubur-ubur tak menyengat di danau, dan terumbu karang tak tersentuh.",
+    "image": "https://picsum.photos/seed/derawan/600/400",
+    "location": {
+      "province": "Kalimantan Timur",
+      "city": "Berau",
+      "coordinates": { "lat": 2.2836, "lng": 118.2387 }
+    },
+    "details": {
+      "type": "Kepulauan",
+      "entryFee": 50000,
+      "openHours": "Sepanjang Tahun",
+      "rating": 4.7
+    },
+    "contact": {
+      "phone": "0554-21020",
+      "email": "derawan@beraukab.go.id",
+      "website": "https://www.derawanislands.com"
+    },
+    "facilities": ["Resort", "Dive Center", "Snorkeling", "Kayak", "Boat Charter"],
+    "tags": ["Diving", "Snorkeling", "Kepulauan", "Penyu"],
+    "status": "active"
+  }
+]

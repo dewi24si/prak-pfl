@@ -1,13 +1,50 @@
-import BiodataDiri from "./pertemuan-2/BiodataDiri";
-import Container from "./pertemuan-2/Container";
-import "./custom.css";
+import React, { Suspense } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Loading from './components/Loading'
 
-function App() {
+const MainLayout  = React.lazy(() => import('./layouts/MainLayout'))
+const AuthLayout  = React.lazy(() => import('./layouts/AuthLayout'))
+
+const Dashboard   = React.lazy(() => import('./pages/Dashboard'))
+const Pasien      = React.lazy(() => import('./pages/Pasien'))
+const Jadwal      = React.lazy(() => import('./pages/Jadwal'))
+const Pembayaran  = React.lazy(() => import('./pages/Pembayaran'))
+const Riwayat     = React.lazy(() => import('./pages/Riwayat'))
+const Loyalitas   = React.lazy(() => import('./pages/Loyalitas'))
+const Laporan     = React.lazy(() => import('./pages/Laporan'))
+const NotFound    = React.lazy(() => import('./pages/NotFound'))
+
+const Login       = React.lazy(() => import('./pages/auth/Login'))
+const Register    = React.lazy(() => import('./pages/auth/Register'))
+const Forgot      = React.lazy(() => import('./pages/auth/Forgot'))
+
+export default function App() {
   return (
-    <Container>
-      <BiodataDiri />
-    </Container>
-  );
-}
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        {/* Redirect root ke login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-export default App;
+        {/* Main Layout Routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/dashboard"   element={<Dashboard />} />
+          <Route path="/pasien"      element={<Pasien />} />
+          <Route path="/jadwal"      element={<Jadwal />} />
+          <Route path="/pembayaran"  element={<Pembayaran />} />
+          <Route path="/riwayat"     element={<Riwayat />} />
+          <Route path="/loyalitas"   element={<Loyalitas />} />
+          <Route path="/laporan"     element={<Laporan />} />
+        </Route>
+
+        {/* Auth Layout Routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login"    element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot"   element={<Forgot />} />
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  )
+}

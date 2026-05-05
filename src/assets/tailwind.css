@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-poppins: "Poppins", sans-serif;
+  --font-barlow: "Barlow", sans-serif;
+
+  --color-latar: #f0f9ff;
+  --color-teks: #0c4a6e;
+  --color-teks-samping: #475569;
+  --color-garis: #bae6fd;
+  --color-biru: #0891b2;
+  --color-biru-muda: #e0f2fe;
+  --color-hijau: #22c55e;
+  --color-merah: #ef4444;
+  --color-kuning: #f59e0b;
+  --color-ungu: #8b5cf6;
+}
+
+body {
+  @apply font-barlow;
+}
