@@ -23,7 +23,7 @@ export default function Login() {
     setError('')
 
     axios
-      .post('https://dummyjson.com/user/login', {
+      .post('https://dummyjson.com/auth/login', {
         username: dataForm.username,
         password: dataForm.password,
       })
