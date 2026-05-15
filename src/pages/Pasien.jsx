@@ -1,14 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { MdPersonAdd, MdClose, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-
-const initialData = [
-  { id:'P001', nama:'Budi Santoso',   email:'budi@mail.com',   telp:'0812-3456-7890', loyalitas:'Bronze' },
-  { id:'P002', nama:'Ani Rahayu',     email:'ani@mail.com',    telp:'0813-2345-6789', loyalitas:'Silver' },
-  { id:'P003', nama:'Citra Dewi',     email:'citra@mail.com',  telp:'0814-3456-7891', loyalitas:'Gold'   },
-  { id:'P004', nama:'Deni Kurniawan', email:'deni@mail.com',   telp:'0815-4567-8902', loyalitas:'Bronze' },
-  { id:'P005', nama:'Eka Putri',      email:'eka@mail.com',    telp:'0816-5678-9013', loyalitas:'Silver' },
-]
+import pasienData from '../data/pasien'
 
 const loyalBadge = {
   Bronze: 'bg-yellow-100 text-yellow-700',
@@ -22,7 +16,7 @@ const inputCls = 'w-full px-4 py-3 border border-garis rounded-xl text-sm text-t
 const labelCls = 'block text-sm font-semibold text-teks mb-2'
 
 export default function Pasien() {
-  const [data, setData]           = useState(initialData)
+  const [data, setData]           = useState(pasienData)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
@@ -87,7 +81,7 @@ export default function Pasien() {
                     checked={checked.length===filtered.length && filtered.length>0}
                     onChange={toggleAll} />
                 </th>
-                {['Avatar','Nama','Email','Telepon','Loyalitas','Edit'].map(h => (
+                {['Avatar','Nama','Email','Telepon','Loyalitas','Aksi'].map(h => (
                   <th key={h} className="text-left px-3 py-3 text-[11px] font-bold text-teks-samping uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -101,7 +95,11 @@ export default function Pasien() {
                   <td className="px-3 py-3.5">
                     <div className="w-8 h-8 rounded-full bg-biru-muda flex items-center justify-center text-biru text-xs font-bold">{p.nama[0]}</div>
                   </td>
-                  <td className="px-3 py-3.5 font-semibold text-teks">{p.nama}</td>
+                  <td className="px-3 py-3.5 font-semibold text-teks">
+                    <Link to={`/pasien/${p.id}`} className="hover:text-biru hover:underline transition-colors">
+                      {p.nama}
+                    </Link>
+                  </td>
                   <td className="px-3 py-3.5 text-teks-samping">{p.email}</td>
                   <td className="px-3 py-3.5 text-teks-samping">{p.telp}</td>
                   <td className="px-3 py-3.5">
