@@ -1,78 +1,108 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   MdDashboard, MdPerson, MdCalendarToday, MdPayment,
-  MdHistory, MdStars, MdBarChart, MdAdd
+  MdHistory, MdStars, MdBarChart, MdChevronRight, MdChevronLeft
 } from 'react-icons/md'
 import { FaTooth } from 'react-icons/fa'
 
 const menuItems = [
-  { to: '/dashboard',   icon: <MdDashboard />,    label: 'Dashboard' },
-  { to: '/pasien',      icon: <MdPerson />,        label: 'Data Pasien' },
-  { to: '/jadwal',      icon: <MdCalendarToday />, label: 'Jadwal & Reminder' },
-  { to: '/pembayaran',  icon: <MdPayment />,       label: 'Pembayaran' },
-  { to: '/riwayat',     icon: <MdHistory />,       label: 'Riwayat Perawatan' },
-  { to: '/loyalitas',   icon: <MdStars />,         label: 'Program Loyalitas' },
-  { to: '/laporan',     icon: <MdBarChart />,      label: 'Laporan' },
+  { to: '/dashboard',  Icon: MdDashboard,    label: 'Dashboard' },
+  { to: '/pasien',     Icon: MdPerson,        label: 'Data Pasien' },
+  { to: '/jadwal',     Icon: MdCalendarToday, label: 'Jadwal & Reminder' },
+  { to: '/pembayaran', Icon: MdPayment,       label: 'Pembayaran' },
+  { to: '/riwayat',    Icon: MdHistory,       label: 'Riwayat Perawatan' },
+  { to: '/loyalitas',  Icon: MdStars,         label: 'Program Loyalitas' },
+  { to: '/laporan',    Icon: MdBarChart,      label: 'Laporan' },
 ]
 
-const menuClass = ({ isActive }) =>
-  `flex cursor-pointer items-center rounded-xl p-3 space-x-3 font-medium transition-colors duration-150
-  ${isActive
-    ? 'text-biru bg-biru-muda font-semibold'
-    : 'text-teks-samping hover:text-biru hover:bg-biru-muda'
-  }`
-
 export default function Sidebar() {
+  const [collapsed, setCollapsed] = useState(false)
+
   return (
-    <div id="sidebar" className="flex min-h-screen w-72 flex-col bg-white p-6 shadow-lg shrink-0">
-
+    <aside
+      id="sidebar"
+      className={`relative flex flex-col min-h-screen bg-white shadow-[2px_0_20px_rgba(0,0,0,0.06)] shrink-0 transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-[240px]'}`}
+    >
       {/* Logo */}
-      <div id="sidebar-logo" className="flex flex-col mb-2">
-        <span className="font-poppins text-[28px] font-[900] text-teks flex items-center gap-2">
-          <FaTooth className="text-biru" />
-          Permata<span className="text-biru">.</span>
-        </span>
-        <span className="text-teks-samping text-sm font-medium">Klinik Gigi Permata</span>
+      <div className={`flex items-center gap-3 px-5 py-5 border-b border-garis ${collapsed ? 'justify-center px-3' : ''}`}>
+        <div className="w-9 h-9 bg-biru rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+          <FaTooth className="text-white text-base" />
+        </div>
+        {!collapsed && (
+          <div className="leading-tight overflow-hidden">
+            <p className="font-poppins font-bold text-teks text-sm whitespace-nowrap">Permata</p>
+            <p className="text-[11px] text-teks-samping">Klinik Gigi</p>
+          </div>
+        )}
       </div>
 
-      <hr className="border-garis mb-4" />
+      {/* Nav */}
+      <nav className={`flex-1 py-4 space-y-0.5 ${collapsed ? 'px-2' : 'px-3'}`}>
+        {!collapsed && (
+          <p className="text-[10px] uppercase font-bold tracking-widest text-teks-samping mb-2 px-3">
+            Menu
+          </p>
+        )}
 
-      {/* Menu */}
-      <div id="sidebar-menu" className="flex-1">
-        <p className="text-xs text-teks-samping uppercase font-semibold tracking-wider mb-3 px-1">Menu Utama</p>
-        <ul id="menu-list" className="space-y-1">
-          {menuItems.map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.to === '/dashboard'}
-                className={menuClass}
-              >
-                <span className="text-xl">{item.icon}</span>
-                <span className="text-sm">{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </div>
+        {menuItems.map(({ to, Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/dashboard'}
+            title={collapsed ? label : undefined}
+            className={({ isActive }) =>
+              `group flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150
+               ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'}
+               ${isActive
+                 ? 'bg-biru-muda text-biru'
+                 : 'text-teks-samping hover:bg-latar hover:text-teks'
+               }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <Icon className={`text-[20px] flex-shrink-0 ${isActive ? 'text-biru' : ''}`} />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 truncate">{label}</span>
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-biru" />}
+                  </>
+                )}
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
 
-      {/* Footer */}
-      <div id="sidebar-footer" className="mt-auto">
-        <div className="bg-biru px-4 py-3 rounded-xl shadow mb-6 flex items-center gap-3">
-          <div className="text-white text-sm flex-1">
-            <p className="font-semibold">Tambah Pasien Baru</p>
-            <p className="text-xs text-blue-100 mt-0.5">Daftarkan pasien dengan mudah</p>
-            <NavLink
-              to="/pasien"
-              className="flex justify-center items-center gap-1 p-1.5 mt-2 bg-white rounded-md text-biru text-xs font-semibold"
-            >
-              <MdAdd /> Tambah Pasien
-            </NavLink>
+      {/* User card */}
+      {!collapsed && (
+        <div className="px-4 py-4 border-t border-garis">
+          <div className="flex items-center gap-3">
+            <img src="https://avatar.iran.liara.run/public/girl/5" alt="avatar"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-biru-muda flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-teks truncate">drg. Sari</p>
+              <p className="text-[11px] text-teks-samping truncate">Administrator</p>
+            </div>
+            <span className="w-2 h-2 rounded-full bg-hijau flex-shrink-0" />
           </div>
         </div>
-        <span className="font-bold text-teks-samping text-sm block">Klinik Gigi Permata</span>
-        <p className="font-light text-teks-samping text-xs">© 2025 All Right Reserved</p>
-      </div>
-    </div>
+      )}
+      {collapsed && (
+        <div className="px-2 py-4 border-t border-garis flex justify-center">
+          <img src="https://avatar.iran.liara.run/public/girl/5" alt="avatar"
+            className="w-9 h-9 rounded-full object-cover ring-2 ring-biru-muda" />
+        </div>
+      )}
+
+      {/* Collapse toggle */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3.5 top-[72px] w-7 h-7 bg-white border border-garis rounded-full flex items-center justify-center shadow-sm text-teks-samping hover:text-biru hover:border-biru transition-colors z-10"
+      >
+        {collapsed ? <MdChevronRight className="text-base" /> : <MdChevronLeft className="text-base" />}
+      </button>
+    </aside>
   )
 }

@@ -1,56 +1,62 @@
 import { FaSearch } from 'react-icons/fa'
-import { MdSettings, MdNotifications, MdLogout } from 'react-icons/md'
+import { MdNotifications, MdSettings, MdLogout, MdMenu } from 'react-icons/md'
 import { useNavigate } from 'react-router-dom'
 
 export default function Header() {
   const navigate = useNavigate()
-
   return (
-    <div id="header-container" className="flex justify-between items-center p-4 bg-white border-b border-garis">
-      {/* Search Bar */}
-      <div id="search-bar" className="relative w-full max-w-md">
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Cari pasien, jadwal..."
-          className="border border-gray-200 p-2 pl-4 pr-10 bg-latar w-full rounded-xl outline-none text-sm text-teks"
-        />
-        <FaSearch id="search-icon" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-teks-samping" />
+    <header id="header-container" className="flex items-center justify-between px-6 py-3 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] z-10">
+
+      {/* Left: hamburger + title */}
+      <div className="flex items-center gap-3">
+        <MdMenu className="text-2xl text-teks-samping cursor-pointer hover:text-biru transition-colors" />
+        <h1 className="text-base font-bold text-teks">Dashboard</h1>
       </div>
 
-      {/* Icons & Profile */}
-      <div id="icons-container" className="flex items-center space-x-3">
-        <div id="notification-icon" className="relative p-2.5 bg-biru-muda rounded-2xl text-biru cursor-pointer">
-          <MdNotifications className="text-xl" />
-          <span id="notification-badge" className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-merah rounded-full px-1.5 py-0.5 text-[10px] text-white font-bold">
-            3
-          </span>
-        </div>
+      {/* Center: search */}
+      <div className="relative w-64 hidden md:block">
+        <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teks-samping text-xs" />
+        <input
+          type="text"
+          placeholder="Search here..."
+          className="w-full pl-9 pr-4 py-2 bg-latar rounded-full text-sm text-teks outline-none focus:ring-2 focus:ring-biru-muda transition placeholder:text-teks-samping"
+        />
+      </div>
 
-        <div id="settings-icon" className="p-2.5 bg-biru-muda rounded-2xl text-biru cursor-pointer">
-          <MdSettings className="text-xl" />
-        </div>
+      {/* Right */}
+      <div className="flex items-center gap-1">
+        {/* Notification */}
+        <button className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-latar transition-colors">
+          <MdNotifications className="text-xl text-teks-samping" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-merah rounded-full border-2 border-white" />
+        </button>
+
+        {/* Settings */}
+        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-latar transition-colors">
+          <MdSettings className="text-xl text-teks-samping" />
+        </button>
+
+        <div className="w-px h-6 bg-garis mx-1" />
 
         {/* Profile */}
-        <div id="profile-container" className="flex items-center space-x-3 border-l pl-4 border-garis">
-          <span id="profile-text" className="text-sm text-teks-samping">
-            Halo, <b className="text-teks">drg. Sari</b>
-          </span>
-          <img
-            id="profile-avatar"
-            src="https://avatar.iran.liara.run/public/girl/5"
-            className="w-9 h-9 rounded-full border-2 border-biru"
-          />
+        <div className="flex items-center gap-2.5 cursor-pointer px-2 py-1 rounded-full hover:bg-latar transition-colors">
+          <img src="https://avatar.iran.liara.run/public/girl/5" alt="avatar"
+            className="w-8 h-8 rounded-full object-cover" />
+          <div className="hidden sm:block">
+            <p className="text-[13px] font-bold text-teks leading-none">drg. Sari</p>
+            <p className="text-[11px] text-teks-samping mt-0.5">Admin</p>
+          </div>
         </div>
 
         {/* Logout */}
         <button
           onClick={() => navigate('/login')}
-          className="flex items-center gap-1.5 bg-merah text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-red-600 transition"
+          className="ml-1 flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-merah hover:bg-red-700 rounded-full transition-colors"
         >
-          <MdLogout className="text-lg" /> Keluar
+          <MdLogout className="text-base" />
+          <span className="hidden sm:inline">Keluar</span>
         </button>
       </div>
-    </div>
+    </header>
   )
 }

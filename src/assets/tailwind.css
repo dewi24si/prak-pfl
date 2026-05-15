@@ -1,22 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-poppins: "Poppins", sans-serif;
-  --font-barlow: "Barlow", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-poppins:  "Poppins", sans-serif;
 
-  --color-latar: #f0f9ff;
-  --color-teks: #0c4a6e;
-  --color-teks-samping: #475569;
-  --color-garis: #bae6fd;
-  --color-biru: #0891b2;
-  --color-biru-muda: #e0f2fe;
-  --color-hijau: #22c55e;
-  --color-merah: #ef4444;
-  --color-kuning: #f59e0b;
-  --color-ungu: #8b5cf6;
+  --color-latar:        #F0F1F8;
+  --color-teks:         #1D2130;
+  --color-teks-samping: #7C85A2;
+  --color-garis:        #E8EAF2;
+
+  --color-biru:         #3D40E0;
+  --color-biru-muda:    #ECEEFF;
+  --color-biru-hover:   #3235C8;
+
+  --color-hijau:        #00897B;
+  --color-hijau-muda:   #E0F2F1;
+  --color-merah:        #E53935;
+  --color-merah-muda:   #FFEBEE;
+  --color-kuning:       #F9A825;
+  --color-kuning-muda:  #FFF8E1;
+  --color-ungu:         #7C3AED;
+  --color-ungu-muda:    #EDE9FE;
+  --color-pink:         #E91E8C;
+  --color-pink-muda:    #FCE4EC;
+  --color-teal:         #00796B;
+  --color-teal-muda:    #E0F2F1;
 }
 
 body {
-  @apply font-barlow;
+  @apply font-montserrat;
 }
+
+* { box-sizing: border-box; }

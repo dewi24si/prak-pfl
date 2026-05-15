@@ -1,24 +1,19 @@
 export default function PageHeader({ title, breadcrumb, children }) {
   const crumbs = Array.isArray(breadcrumb) ? breadcrumb : [breadcrumb]
-
   return (
-    <div id="pageheader-container" className="flex items-center justify-between p-4 border-b border-garis mb-4">
-      <div id="pageheader-left" className="flex flex-col">
-        <span id="page-title" className="text-3xl font-semibold text-teks">
-          {title}
-        </span>
-        <div id="breadcrumb-links" className="flex items-center font-medium space-x-2 mt-2">
+    <div id="pageheader-container" className="flex items-start justify-between mb-6">
+      <div>
+        <h1 className="text-2xl font-bold text-teks">{title}</h1>
+        <nav className="flex items-center gap-1.5 mt-1">
           {crumbs.map((crumb, i) => (
-            <span key={i} className="flex items-center space-x-2">
-              {i > 0 && <span className="text-teks-samping">/</span>}
-              <span className="text-teks-samping text-sm">{crumb}</span>
+            <span key={i} className="flex items-center gap-1.5">
+              {i > 0 && <span className="text-teks-samping text-xs">•</span>}
+              <span className={`text-xs font-semibold ${i === crumbs.length - 1 ? 'text-biru' : 'text-teks-samping'}`}>{crumb}</span>
             </span>
           ))}
-        </div>
+        </nav>
       </div>
-      <div id="action-button">
-        {children}
-      </div>
+      {children}
     </div>
   )
 }
