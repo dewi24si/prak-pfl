@@ -1,4 +1,7 @@
 import PageHeader from '../components/PageHeader'
+import Button from '../components/Button'
+import StatCard from '../components/StatCard'
+import Table from '../components/Table'
 import { MdDownload, MdTrendingUp, MdPerson, MdPayment, MdCalendarToday } from 'react-icons/md'
 
 const monthlyData = [
@@ -19,29 +22,21 @@ const tindakanPopuler = [
 ]
 
 const kpi = [
-  {Icon:MdPerson,        label:'Total Pasien',   value:'248',     color:'text-biru',   bg:'bg-biru-muda'},
-  {Icon:MdCalendarToday, label:'Total Tindakan', value:'312',     color:'text-hijau',  bg:'bg-hijau-muda'},
-  {Icon:MdPayment,       label:'Pendapatan YTD', value:'Rp 203jt',color:'text-kuning', bg:'bg-kuning-muda'},
-  {Icon:MdTrendingUp,    label:'Retensi Pasien', value:'78%',     color:'text-ungu',   bg:'bg-ungu-muda'},
+  {Icon:MdPerson,        label:'Total Pasien',   value:'248',      change:'+12%', up:true,  color:'text-biru',   bg:'bg-biru-muda'  },
+  {Icon:MdCalendarToday, label:'Total Tindakan', value:'312',      change:'+8%',  up:true,  color:'text-hijau',  bg:'bg-hijau-muda' },
+  {Icon:MdPayment,       label:'Pendapatan YTD', value:'Rp 203jt', change:'+18%', up:true,  color:'text-kuning', bg:'bg-kuning-muda'},
+  {Icon:MdTrendingUp,    label:'Retensi Pasien', value:'78%',      change:'-2%',  up:false, color:'text-ungu',   bg:'bg-ungu-muda'  },
 ]
 
 export default function Laporan() {
   return (
     <div>
       <PageHeader title="Laporan" breadcrumb={['Beranda','Laporan']}>
-        <button className="flex items-center gap-1.5 bg-biru hover:bg-biru-hover text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm">
-          <MdDownload className="text-base"/> Unduh Laporan
-        </button>
+        <Button type="primary" icon={<MdDownload/>}>Unduh Laporan</Button>
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        {kpi.map(k => (
-          <div key={k.label} className="bg-white rounded-2xl p-5 shadow-[0_2px_15px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_25px_rgba(0,0,0,0.10)] transition-shadow">
-            <div className={`${k.bg} p-2.5 rounded-xl w-fit mb-3`}><k.Icon className={`text-[18px] ${k.color}`}/></div>
-            <p className="text-2xl font-bold text-teks">{k.value}</p>
-            <p className="text-sm text-teks-samping mt-0.5">{k.label}</p>
-          </div>
-        ))}
+        {kpi.map((k,i) => <StatCard key={i} {...k}/>)}
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -49,25 +44,16 @@ export default function Laporan() {
           <div className="px-5 py-4 border-b border-garis">
             <h3 className="font-bold text-teks text-sm">Rekap Bulanan 2025</h3>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-latar border-b border-garis">
-                {['Bulan','Pasien','Tindakan','Pendapatan'].map(h=>(
-                  <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-teks-samping uppercase tracking-wider">{h}</th>
-                ))}
+          <Table headers={['Bulan','Pasien','Tindakan','Pendapatan']}>
+            {monthlyData.map(m => (
+              <tr key={m.bulan} className="hover:bg-latar transition-colors">
+                <td className="px-5 py-3 text-sm font-semibold text-teks">{m.bulan}</td>
+                <td className="px-5 py-3 text-sm text-teks-samping">{m.pasien}</td>
+                <td className="px-5 py-3 text-sm text-teks-samping">{m.tindakan}</td>
+                <td className="px-5 py-3 text-sm font-bold text-teks">{m.pendapatan}</td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-garis">
-              {monthlyData.map(m => (
-                <tr key={m.bulan} className="hover:bg-latar transition-colors">
-                  <td className="px-5 py-3 font-semibold text-teks">{m.bulan}</td>
-                  <td className="px-5 py-3 text-teks-samping">{m.pasien}</td>
-                  <td className="px-5 py-3 text-teks-samping">{m.tindakan}</td>
-                  <td className="px-5 py-3 font-bold text-teks">{m.pendapatan}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </Table>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-[0_2px_15px_rgba(0,0,0,0.06)]">

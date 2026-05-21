@@ -1,16 +1,33 @@
 import { FaSearch } from 'react-icons/fa'
-import { MdNotifications, MdSettings, MdLogout, MdMenu } from 'react-icons/md'
-import { useNavigate } from 'react-router-dom'
+import { MdNotifications, MdSettings, MdLogout } from 'react-icons/md'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+const routeTitles = {
+  '/dashboard':  'Dashboard',
+  '/pasien':     'Data Pasien',
+  '/jadwal':     'Jadwal & Reminder',
+  '/pembayaran': 'Pembayaran',
+  '/riwayat':    'Riwayat Perawatan',
+  '/loyalitas':  'Program Loyalitas',
+  '/laporan':    'Laporan',
+  '/components': 'Components',
+}
 
 export default function Header() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Match route title (handles dynamic segments like /pasien/:id)
+  const pageTitle = Object.entries(routeTitles).find(([path]) =>
+    location.pathname === path || location.pathname.startsWith(path + '/')
+  )?.[1] ?? 'Halaman'
+
   return (
     <header id="header-container" className="flex items-center justify-between px-6 py-3 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] z-10">
 
-      {/* Left: hamburger + title */}
+      {/* Left: title */}
       <div className="flex items-center gap-3">
-        <MdMenu className="text-2xl text-teks-samping cursor-pointer hover:text-biru transition-colors" />
-        <h1 className="text-base font-bold text-teks">Dashboard</h1>
+        <h1 className="text-base font-bold text-teks">{pageTitle}</h1>
       </div>
 
       {/* Center: search */}
@@ -25,20 +42,17 @@ export default function Header() {
 
       {/* Right */}
       <div className="flex items-center gap-1">
-        {/* Notification */}
         <button className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-latar transition-colors">
           <MdNotifications className="text-xl text-teks-samping" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-merah rounded-full border-2 border-white" />
         </button>
 
-        {/* Settings */}
         <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-latar transition-colors">
           <MdSettings className="text-xl text-teks-samping" />
         </button>
 
         <div className="w-px h-6 bg-garis mx-1" />
 
-        {/* Profile */}
         <div className="flex items-center gap-2.5 cursor-pointer px-2 py-1 rounded-full hover:bg-latar transition-colors">
           <img src="https://avatar.iran.liara.run/public/girl/5" alt="avatar"
             className="w-8 h-8 rounded-full object-cover" />
@@ -48,7 +62,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Logout */}
         <button
           onClick={() => navigate('/login')}
           className="ml-1 flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-merah hover:bg-red-700 rounded-full transition-colors"

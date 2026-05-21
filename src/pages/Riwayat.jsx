@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
-import { MdAddCircle, MdClose, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
+import Button from '../components/Button'
+import Badge from '../components/Badge'
+import Avatar from '../components/Avatar'
+import Modal from '../components/Modal'
+import InputField from '../components/InputField'
+import SelectField from '../components/SelectField'
+import TextArea from '../components/TextArea'
+import Table from '../components/Table'
+import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 
 const initialData = [
   { id:'R001', pasien:'Budi Santoso',   dokter:'drg. Sari', tindakan:'Scaling',         tanggal:'2025-03-10', catatan:'Karang gigi bersih, disarankan scaling 6 bulan lagi.' },
@@ -13,15 +21,8 @@ const initialData = [
   { id:'R008', pasien:'Hendra Wijaya',  dokter:'drg. Reza', tindakan:'Tambal Gigi',      tanggal:'2025-06-03', catatan:'Tambalan sementara, kembali 1 minggu.' },
 ]
 
-const tindakanBadge = {
-  'Scaling':'bg-biru-muda text-biru','Tambal Gigi':'bg-hijau-muda text-hijau',
-  'Konsultasi':'bg-ungu-muda text-ungu','Cabut Gigi':'bg-merah-muda text-merah',
-  'Pemasangan Behel':'bg-kuning-muda text-kuning','Veneer':'bg-pink-muda text-pink',
-}
-
+const tindakanType = { 'Scaling':'primary','Tambal Gigi':'success','Konsultasi':'purple','Cabut Gigi':'danger','Pemasangan Behel':'warning','Veneer':'pink' }
 const emptyForm = { pasien:'', dokter:'drg. Sari', tindakan:'Scaling', tanggal:'', catatan:'' }
-const inputCls = 'w-full px-4 py-3 border border-garis rounded-xl text-sm text-teks outline-none focus:border-biru focus:ring-2 focus:ring-biru-muda bg-latar transition'
-const labelCls = 'block text-sm font-semibold text-teks mb-2'
 
 export default function Riwayat() {
   const [data, setData]           = useState(initialData)
@@ -29,9 +30,8 @@ export default function Riwayat() {
   const [form, setForm]           = useState(emptyForm)
   const [search, setSearch]       = useState('')
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleSubmit = () => {
     if (!form.pasien || !form.tanggal) return
     setData([...data, { id:`R${String(data.length+1).padStart(3,'0')}`, ...form }])
     setForm(emptyForm); setShowModal(false)
@@ -42,10 +42,9 @@ export default function Riwayat() {
   return (
     <div>
       <PageHeader title="Riwayat Perawatan" breadcrumb={['Beranda','Riwayat Perawatan']}>
-        <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 bg-biru hover:bg-biru-hover text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm">
-          <MdAddCircle className="text-base" /> Tambah Riwayat
-        </button>
+        <Button type="primary" icon={<MdAddCircle/>} onClick={() => setShowModal(true)}>
+          Tambah Riwayat
+        </Button>
       </PageHeader>
 
       <div className="bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.06)] overflow-hidden">
@@ -60,74 +59,62 @@ export default function Riwayat() {
               className="pl-9 pr-4 py-2 border border-garis rounded-full text-sm outline-none focus:border-biru bg-latar w-48 placeholder:text-teks-samping"/>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-latar border-b border-garis">
-                {['Pasien','Dokter','Tindakan','Tanggal','Catatan','Aksi'].map(h=>(
-                  <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-teks-samping uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-garis">
-              {filtered.map(r => (
-                <tr key={r.id} className="hover:bg-latar transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-biru-muda flex items-center justify-center text-biru text-xs font-bold flex-shrink-0">{r.pasien[0]}</div>
-                      <span className="font-semibold text-teks whitespace-nowrap">{r.pasien}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-teks-samping whitespace-nowrap">{r.dokter}</td>
-                  <td className="px-5 py-3.5 whitespace-nowrap">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${tindakanBadge[r.tindakan]||'bg-latar text-teks-samping'}`}>{r.tindakan}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-teks-samping whitespace-nowrap">{r.tanggal}</td>
-                  <td className="px-5 py-3.5 text-teks-samping text-xs max-w-xs truncate">{r.catatan}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <button className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
-                      <button className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        <Table headers={['Pasien','Dokter','Tindakan','Tanggal','Catatan','Aksi']}>
+          {filtered.map(r => (
+            <tr key={r.id} className="hover:bg-latar transition-colors">
+              <td className="px-5 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <Avatar name={r.pasien} size="sm"/>
+                  <span className="font-semibold text-teks text-sm whitespace-nowrap">{r.pasien}</span>
+                </div>
+              </td>
+              <td className="px-5 py-3.5 text-sm text-teks-samping whitespace-nowrap">{r.dokter}</td>
+              <td className="px-5 py-3.5 whitespace-nowrap">
+                <Badge type={tindakanType[r.tindakan] || 'secondary'}>{r.tindakan}</Badge>
+              </td>
+              <td className="px-5 py-3.5 text-sm text-teks-samping whitespace-nowrap">{r.tanggal}</td>
+              <td className="px-5 py-3.5 text-sm text-teks-samping max-w-xs truncate">{r.catatan}</td>
+              <td className="px-5 py-3.5">
+                <div className="flex items-center gap-1.5">
+                  <button className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
+                  <button className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </Table>
+
         <div className="flex items-center justify-between px-5 py-4 border-t border-garis">
           <p className="text-xs text-teks-samping">Showing {filtered.length} entries</p>
           <div className="flex items-center gap-1">
-            {['<','1','2','>'].map((p,i)=>(
+            {['<','1','2','>'].map((p,i) => (
               <button key={i} className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold ${i===1?'bg-biru text-white':'text-teks-samping hover:bg-latar'}`}>{p}</button>
             ))}
           </div>
         </div>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-garis">
-              <h2 className="font-bold text-teks">Tambah Riwayat Perawatan</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-latar text-teks-samping hover:text-merah transition-colors"><MdClose className="text-xl"/></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div><label className={labelCls}>Nama Pasien</label><input name="pasien" value={form.pasien} onChange={handleChange} required className={inputCls} placeholder="Nama pasien"/></div>
-              <div><label className={labelCls}>Dokter</label><select name="dokter" value={form.dokter} onChange={handleChange} className={inputCls}><option>drg. Sari</option><option>drg. Reza</option></select></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className={labelCls}>Tindakan</label><select name="tindakan" value={form.tindakan} onChange={handleChange} className={inputCls}>{['Scaling','Tambal Gigi','Cabut Gigi','Konsultasi','Pemasangan Behel','Veneer'].map(t=><option key={t}>{t}</option>)}</select></div>
-                <div><label className={labelCls}>Tanggal</label><input name="tanggal" value={form.tanggal} onChange={handleChange} required type="date" className={inputCls}/></div>
-              </div>
-              <div><label className={labelCls}>Catatan Dokter</label><textarea name="catatan" value={form.catatan} onChange={handleChange} rows={3} className={`${inputCls} resize-none`} placeholder="Catatan tindakan..."/></div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-full border border-garis text-teks-samping text-sm font-semibold hover:bg-latar transition">Batal</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-full bg-biru hover:bg-biru-hover text-white text-sm font-bold transition-colors">Simpan</button>
-              </div>
-            </form>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Tambah Riwayat Perawatan"
+        footer={
+          <div className="flex gap-3">
+            <Button type="outline" fullWidth onClick={() => setShowModal(false)}>Batal</Button>
+            <Button type="primary" fullWidth onClick={handleSubmit}>Simpan</Button>
           </div>
+        }>
+        <div className="space-y-4">
+          <InputField label="Nama Pasien" name="pasien" value={form.pasien} onChange={handleChange} required placeholder="Nama pasien"/>
+          <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange}
+            options={['drg. Sari','drg. Reza']} placeholder=""/>
+          <div className="grid grid-cols-2 gap-3">
+            <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleChange}
+              options={['Scaling','Tambal Gigi','Cabut Gigi','Konsultasi','Pemasangan Behel','Veneer']} placeholder=""/>
+            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
+          </div>
+          <TextArea label="Catatan Dokter" name="catatan" value={form.catatan} onChange={handleChange}
+            rows={3} placeholder="Catatan tindakan dan kondisi pasien..."/>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

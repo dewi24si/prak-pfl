@@ -3,29 +3,32 @@
 
 @theme {
   --font-montserrat: "Montserrat", sans-serif;
-  --font-poppins:  "Poppins", sans-serif;
+  --font-poppins:    "Poppins", sans-serif;
 
-  --color-latar:        #F0F1F8;
-  --color-teks:         #1D2130;
-  --color-teks-samping: #7C85A2;
-  --color-garis:        #E8EAF2;
+  /* ── Uko UI Kit · Background & Text ── */
+  --color-latar:        #F4F7FE;
+  --color-teks:         #2B3674;
+  --color-teks-samping: #A3AED0;
+  --color-garis:        #E9EBF5;
 
-  --color-biru:         #3D40E0;
-  --color-biru-muda:    #ECEEFF;
-  --color-biru-hover:   #3235C8;
+  /* ── Uko UI Kit · Primary Blue ── */
+  --color-biru:         #2499EF;
+  --color-biru-muda:    #EBF5FE;
+  --color-biru-hover:   #1C7FCC;
 
-  --color-hijau:        #00897B;
-  --color-hijau-muda:   #E0F2F1;
-  --color-merah:        #E53935;
-  --color-merah-muda:   #FFEBEE;
-  --color-kuning:       #F9A825;
-  --color-kuning-muda:  #FFF8E1;
-  --color-ungu:         #7C3AED;
-  --color-ungu-muda:    #EDE9FE;
-  --color-pink:         #E91E8C;
-  --color-pink-muda:    #FCE4EC;
-  --color-teal:         #00796B;
-  --color-teal-muda:    #E0F2F1;
+  /* ── Status Colors (Uko style) ── */
+  --color-hijau:        #4FBF67;
+  --color-hijau-muda:   #E8F8ED;
+  --color-merah:        #FF6060;
+  --color-merah-muda:   #FFE8E8;
+  --color-kuning:       #FFD166;
+  --color-kuning-muda:  #FFF6DC;
+  --color-ungu:         #9B51E0;
+  --color-ungu-muda:    #F3E8FD;
+  --color-pink:         #FF4FA3;
+  --color-pink-muda:    #FFE6F2;
+  --color-teal:         #00C9A7;
+  --color-teal-muda:    #DCFAF4;
 }
 
 body {

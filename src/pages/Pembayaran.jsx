@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
-import { MdReceiptLong, MdClose, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
+import Button from '../components/Button'
+import Badge from '../components/Badge'
+import Avatar from '../components/Avatar'
+import Modal from '../components/Modal'
+import InputField from '../components/InputField'
+import SelectField from '../components/SelectField'
+import Table from '../components/Table'
+import { MdReceiptLong, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 
 const tindakanHarga = { 'Scaling':'Rp 250.000','Tambal Gigi':'Rp 350.000','Cabut Gigi':'Rp 300.000','Konsultasi':'Rp 100.000','Pemasangan Behel':'Rp 5.000.000','Veneer':'Rp 2.500.000' }
 const initialData = [
@@ -13,11 +20,9 @@ const initialData = [
   { id:'TRX007', pasien:'Gita Lestari',   tindakan:'Veneer',           jumlah:'Rp 2.500.000', tanggal:'2025-06-05', status:'Lunas'       },
   { id:'TRX008', pasien:'Irwan Saputra',  tindakan:'Scaling',          jumlah:'Rp 250.000',   tanggal:'2025-06-05', status:'Lunas'       },
 ]
-const statusBadge = { 'Lunas':'bg-hijau-muda text-hijau','Belum Lunas':'bg-kuning-muda text-kuning' }
+const statusType = { 'Lunas':'success', 'Belum Lunas':'warning' }
 const tabs = ['All','Lunas','Belum Lunas']
 const emptyForm = { pasien:'', tindakan:'Scaling', tanggal:'', status:'Lunas' }
-const inputCls = 'w-full px-4 py-3 border border-garis rounded-xl text-sm text-teks outline-none focus:border-biru focus:ring-2 focus:ring-biru-muda bg-latar transition'
-const labelCls = 'block text-sm font-semibold text-teks mb-2'
 
 export default function Pembayaran() {
   const [data, setData]           = useState(initialData)
@@ -26,9 +31,8 @@ export default function Pembayaran() {
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleSubmit = () => {
     if (!form.pasien || !form.tanggal) return
     setData([...data, { id:`TRX${String(data.length+1).padStart(3,'0')}`, jumlah:tindakanHarga[form.tindakan], ...form }])
     setForm(emptyForm); setShowModal(false)
@@ -42,19 +46,18 @@ export default function Pembayaran() {
   return (
     <div>
       <PageHeader title="Pembayaran" breadcrumb={['Beranda','Pembayaran']}>
-        <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 bg-biru hover:bg-biru-hover text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm">
-          <MdReceiptLong className="text-base" /> Buat Kwitansi
-        </button>
+        <Button type="primary" icon={<MdReceiptLong/>} onClick={() => setShowModal(true)}>
+          Buat Kwitansi
+        </Button>
       </PageHeader>
 
       <div className="grid grid-cols-3 gap-4 mb-5">
         {[
-          {label:'Total Transaksi',value:data.length, color:'bg-biru-muda text-biru'},
-          {label:'Lunas',          value:data.filter(d=>d.status==='Lunas').length, color:'bg-hijau-muda text-hijau'},
-          {label:'Belum Lunas',    value:data.filter(d=>d.status==='Belum Lunas').length, color:'bg-kuning-muda text-kuning'},
+          { label:'Total Transaksi', value:data.length, cls:'bg-biru-muda text-biru' },
+          { label:'Lunas',           value:data.filter(d=>d.status==='Lunas').length,       cls:'bg-hijau-muda text-hijau' },
+          { label:'Belum Lunas',     value:data.filter(d=>d.status==='Belum Lunas').length, cls:'bg-kuning-muda text-kuning' },
         ].map(c => (
-          <div key={c.label} className={`${c.color} rounded-2xl p-4 text-center shadow-sm`}>
+          <div key={c.label} className={`${c.cls} rounded-2xl p-4 text-center shadow-sm`}>
             <p className="text-3xl font-bold">{c.value}</p>
             <p className="text-sm font-semibold mt-0.5">{c.label}</p>
           </div>
@@ -75,40 +78,33 @@ export default function Pembayaran() {
               className="pl-9 pr-4 py-2 border border-garis rounded-full text-sm outline-none focus:border-biru bg-latar w-48 placeholder:text-teks-samping"/>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-latar border-b border-garis">
-                {['ID','Pasien','Tindakan','Jumlah','Tanggal','Status','Aksi'].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-teks-samping uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-garis">
-              {filtered.map(p => (
-                <tr key={p.id} className="hover:bg-latar transition-colors">
-                  <td className="px-5 py-3.5 text-xs text-teks-samping font-mono">{p.id}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-biru-muda flex items-center justify-center text-biru text-xs font-bold flex-shrink-0">{p.pasien[0]}</div>
-                      <span className="font-semibold text-teks">{p.pasien}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-teks-samping">{p.tindakan}</td>
-                  <td className="px-5 py-3.5 font-bold text-teks">{p.jumlah}</td>
-                  <td className="px-5 py-3.5 text-teks-samping">{p.tanggal}</td>
-                  <td className="px-5 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-bold ${statusBadge[p.status]}`}>{p.status}</span></td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <button className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
-                      <button className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        <Table headers={['ID','Pasien','Tindakan','Jumlah','Tanggal','Status','Aksi']}>
+          {filtered.map(p => (
+            <tr key={p.id} className="hover:bg-latar transition-colors">
+              <td className="px-5 py-3.5 text-xs text-teks-samping font-mono">{p.id}</td>
+              <td className="px-5 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <Avatar name={p.pasien} size="sm"/>
+                  <span className="font-semibold text-teks text-sm">{p.pasien}</span>
+                </div>
+              </td>
+              <td className="px-5 py-3.5 text-sm text-teks-samping">{p.tindakan}</td>
+              <td className="px-5 py-3.5 text-sm font-bold text-teks">{p.jumlah}</td>
+              <td className="px-5 py-3.5 text-sm text-teks-samping">{p.tanggal}</td>
+              <td className="px-5 py-3.5">
+                <Badge type={statusType[p.status]}>{p.status}</Badge>
+              </td>
+              <td className="px-5 py-3.5">
+                <div className="flex items-center gap-1.5">
+                  <button className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
+                  <button className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </Table>
+
         <div className="flex items-center justify-between px-5 py-4 border-t border-garis">
           <p className="text-xs text-teks-samping">Showing {filtered.length} of {data.length} entries</p>
           <div className="flex items-center gap-1">
@@ -119,27 +115,27 @@ export default function Pembayaran() {
         </div>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-garis">
-              <h2 className="font-bold text-teks">Buat Kwitansi Baru</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-latar text-teks-samping hover:text-merah transition-colors"><MdClose className="text-xl"/></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div><label className={labelCls}>Nama Pasien</label><input name="pasien" value={form.pasien} onChange={handleChange} required className={inputCls} placeholder="Nama pasien"/></div>
-              <div><label className={labelCls}>Tindakan</label><select name="tindakan" value={form.tindakan} onChange={handleChange} className={inputCls}>{Object.keys(tindakanHarga).map(t=><option key={t}>{t}</option>)}</select></div>
-              <div className="px-4 py-2.5 bg-biru-muda rounded-xl text-sm text-biru font-bold">Tarif: {tindakanHarga[form.tindakan]}</div>
-              <div><label className={labelCls}>Tanggal</label><input name="tanggal" value={form.tanggal} onChange={handleChange} required type="date" className={inputCls}/></div>
-              <div><label className={labelCls}>Status</label><select name="status" value={form.status} onChange={handleChange} className={inputCls}><option>Lunas</option><option>Belum Lunas</option></select></div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-full border border-garis text-teks-samping text-sm font-semibold hover:bg-latar transition">Batal</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-full bg-biru hover:bg-biru-hover text-white text-sm font-bold transition-colors">Simpan</button>
-              </div>
-            </form>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Buat Kwitansi Baru"
+        footer={
+          <div className="flex gap-3">
+            <Button type="outline" fullWidth onClick={() => setShowModal(false)}>Batal</Button>
+            <Button type="primary" fullWidth onClick={handleSubmit}>Simpan</Button>
           </div>
+        }>
+        <div className="space-y-4">
+          <InputField label="Nama Pasien" name="pasien" value={form.pasien} onChange={handleChange} required placeholder="Nama pasien"/>
+          <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleChange}
+            options={Object.keys(tindakanHarga)} placeholder=""/>
+          {form.tindakan && (
+            <div className="px-4 py-2.5 bg-biru-muda rounded-xl text-sm text-biru font-bold">
+              Tarif: {tindakanHarga[form.tindakan]}
+            </div>
+          )}
+          <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
+          <SelectField label="Status" name="status" value={form.status} onChange={handleChange}
+            options={['Lunas','Belum Lunas']} placeholder=""/>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

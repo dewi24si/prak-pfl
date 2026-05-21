@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   MdDashboard, MdPerson, MdCalendarToday, MdPayment,
-  MdHistory, MdStars, MdBarChart, MdChevronRight, MdChevronLeft
+  MdHistory, MdStars, MdBarChart, MdChevronRight, MdChevronLeft,
+  MdWidgets
 } from 'react-icons/md'
 import { FaTooth } from 'react-icons/fa'
 
@@ -14,6 +15,10 @@ const menuItems = [
   { to: '/riwayat',    Icon: MdHistory,       label: 'Riwayat Perawatan' },
   { to: '/loyalitas',  Icon: MdStars,         label: 'Program Loyalitas' },
   { to: '/laporan',    Icon: MdBarChart,      label: 'Laporan' },
+]
+
+const devItems = [
+  { to: '/components', Icon: MdWidgets, label: 'Components' },
 ]
 
 export default function Sidebar() {
@@ -46,11 +51,7 @@ export default function Sidebar() {
         )}
 
         {menuItems.map(({ to, Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/dashboard'}
-            title={collapsed ? label : undefined}
+          <NavLink key={to} to={to} end={to === '/dashboard'} title={collapsed ? label : undefined}
             className={({ isActive }) =>
               `group flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150
                ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'}
@@ -73,6 +74,39 @@ export default function Sidebar() {
             )}
           </NavLink>
         ))}
+
+        {/* Developer section */}
+        <div className={`mt-4 pt-4 border-t border-garis ${collapsed ? '' : ''}`}>
+          {!collapsed && (
+            <p className="text-[10px] uppercase font-bold tracking-widest text-teks-samping mb-2 px-3">
+              Developer
+            </p>
+          )}
+          {devItems.map(({ to, Icon, label }) => (
+            <NavLink key={to} to={to} title={collapsed ? label : undefined}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150
+                 ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'}
+                 ${isActive
+                   ? 'bg-biru-muda text-biru'
+                   : 'text-teks-samping hover:bg-latar hover:text-teks'
+                 }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon className={`text-[20px] flex-shrink-0 ${isActive ? 'text-biru' : ''}`} />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 truncate">{label}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-biru" />}
+                    </>
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
       </nav>
 
       {/* User card */}
