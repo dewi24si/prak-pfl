@@ -2,7 +2,7 @@ import PageHeader from '../components/PageHeader'
 import Button from '../components/Button'
 import StatCard from '../components/StatCard'
 import Table from '../components/Table'
-import { MdDownload, MdTrendingUp, MdPerson, MdPayment, MdCalendarToday } from 'react-icons/md'
+import { MdDownload, MdTrendingUp, MdPerson, MdPayment, MdCalendarToday, MdHelpOutline } from 'react-icons/md'
 
 const monthlyData = [
   {bulan:'Januari', pasien:38,pendapatan:'Rp 28.500.000',tindakan:45,bar:65},
@@ -28,6 +28,26 @@ const kpi = [
   {Icon:MdTrendingUp,    label:'Retensi Pasien', value:'78%',      change:'-2%',  up:false, color:'text-ungu',   bg:'bg-ungu-muda'  },
 ]
 
+// ── Data FAQ untuk DaisyUI Accordion ─────────────────────────────
+const faqItems = [
+  {
+    q: 'Bagaimana cara membaca laporan pendapatan bulanan?',
+    a: 'Laporan pendapatan bulanan menampilkan total pemasukan dari seluruh tindakan yang telah selesai dilakukan pada bulan bersangkutan. Pastikan status pembayaran pasien sudah diperbarui agar data akurat.'
+  },
+  {
+    q: 'Apa yang dimaksud dengan Retensi Pasien?',
+    a: 'Retensi pasien adalah persentase pasien lama yang kembali melakukan kunjungan dalam periode tertentu. Angka ini menunjukkan tingkat kepuasan dan loyalitas pasien terhadap klinik.'
+  },
+  {
+    q: 'Mengapa data tindakan bulan ini berbeda dengan bulan lalu?',
+    a: 'Perbedaan jumlah tindakan antar bulan dipengaruhi oleh jumlah hari kerja, hari libur nasional, dan fluktuasi jumlah pasien. Lihat detail per tindakan di tabel Rekap Bulanan untuk analisis lebih lanjut.'
+  },
+  {
+    q: 'Bagaimana cara mengunduh laporan?',
+    a: 'Klik tombol "Unduh Laporan" di pojok kanan atas halaman ini. Laporan akan diunduh dalam format PDF dan mencakup semua data yang ditampilkan pada halaman ini.'
+  },
+]
+
 export default function Laporan() {
   return (
     <div>
@@ -39,7 +59,7 @@ export default function Laporan() {
         {kpi.map((k,i) => <StatCard key={i} {...k}/>)}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 mb-5">
         <div className="bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="px-5 py-4 border-b border-garis">
             <h3 className="font-bold text-teks text-sm">Rekap Bulanan 2025</h3>
@@ -75,6 +95,27 @@ export default function Laporan() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── DaisyUI Accordion · FAQ Laporan ────────────────────── */}
+      <div className="bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.06)] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <MdHelpOutline className="text-biru text-xl"/>
+          <h3 className="font-bold text-teks text-sm">Pertanyaan Umum Seputar Laporan</h3>
+        </div>
+        <div className="space-y-2">
+          {faqItems.map((item, i) => (
+            <div key={i} className="collapse collapse-arrow bg-latar rounded-xl border border-garis">
+              <input type="radio" name="faq-accordion" defaultChecked={i === 0} />
+              <div className="collapse-title text-sm font-semibold text-teks">
+                {item.q}
+              </div>
+              <div className="collapse-content">
+                <p className="text-sm text-teks-samping leading-relaxed">{item.a}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

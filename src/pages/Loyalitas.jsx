@@ -19,7 +19,6 @@ const initialData = [
   {id:'P008',nama:'Hendra Wijaya', kunjungan:10, poin:1050, tier:'Silver',lastVisit:'2025-06-03'},
 ]
 
-const tierBar   = { Bronze:'bg-yellow-400', Silver:'bg-gray-400', Gold:'bg-amber-400' }
 const tierType  = { Bronze:'bronze', Silver:'silver', Gold:'gold' }
 const getTier   = p => p>=2000?'Gold':p>=1000?'Silver':'Bronze'
 const tabs      = ['All','Bronze','Silver','Gold']
@@ -75,10 +74,12 @@ export default function Loyalitas() {
           ))}
         </div>
 
-        <Table headers={['Pasien','Kunjungan','Poin','Progress','Tier','Terakhir Kunjung','Aksi']}>
+        <Table headers={['Pasien','Kunjungan','Poin','Progress ke Tier Berikutnya','Tier','Terakhir Kunjung','Aksi']}>
           {filtered.map(p => {
             const maxPoin = p.tier==='Bronze'?1000:p.tier==='Silver'?2000:3500
             const pct = Math.min((p.poin/maxPoin)*100,100)
+            // ── warna progress DaisyUI sesuai tier
+            const progressCls = p.tier==='Gold' ? 'progress-warning' : p.tier==='Silver' ? 'progress-info' : 'progress-warning'
             return (
               <tr key={p.id} className="hover:bg-latar transition-colors">
                 <td className="px-5 py-3.5">
@@ -89,12 +90,19 @@ export default function Loyalitas() {
                 </td>
                 <td className="px-5 py-3.5 text-sm text-teks-samping">{p.kunjungan}x</td>
                 <td className="px-5 py-3.5 text-sm font-bold text-teks">{p.poin.toLocaleString()}</td>
-                <td className="px-5 py-3.5 w-32">
-                  <div className="w-full bg-latar rounded-full h-1.5 mb-1">
-                    <div className={`${tierBar[p.tier]} h-1.5 rounded-full`} style={{width:`${pct}%`}}/>
-                  </div>
-                  <span className="text-[11px] text-teks-samping font-semibold">{Math.round(pct)}%</span>
+
+                {/* ── DaisyUI Progress ─────────────────────────────── */}
+                <td className="px-5 py-3.5 w-40">
+                  <progress
+                    className={`progress w-full h-2 mb-1 ${progressCls}`}
+                    value={pct}
+                    max="100"
+                  />
+                  <span className="text-[11px] text-teks-samping font-semibold">
+                    {Math.round(pct)}% menuju {p.tier==='Gold'?'Maks':p.tier==='Silver'?'Gold':'Silver'}
+                  </span>
                 </td>
+
                 <td className="px-5 py-3.5">
                   <Badge type={tierType[p.tier]}>{p.tier}</Badge>
                 </td>
