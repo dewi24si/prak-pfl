@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Button from '../components/Button'
@@ -22,6 +22,16 @@ export default function Pasien() {
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
   const [checked, setChecked]     = useState([])
+
+  // useRef: menyimpan referensi ke elemen input search tanpa memicu re-render
+  const searchRef = useRef(null)
+
+  // useEffect: auto-focus ke input search saat halaman pertama kali dibuka
+  useEffect(() => {
+    if (searchRef.current) {
+      searchRef.current.focus()
+    }
+  }, [])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
   const handleSubmit = e => {
@@ -59,8 +69,13 @@ export default function Pasien() {
           </div>
           <div className="relative mb-3">
             <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-teks-samping text-lg"/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..."
-              className="pl-9 pr-4 py-2 border border-garis rounded-full text-sm outline-none focus:border-biru bg-latar w-48 placeholder:text-teks-samping"/>
+            <input
+              ref={searchRef}
+              value={search}
+              onChange={e=>setSearch(e.target.value)}
+              placeholder="Search..."
+              className="pl-9 pr-4 py-2 border border-garis rounded-full text-sm outline-none focus:border-biru bg-latar w-48 placeholder:text-teks-samping"
+            />
           </div>
         </div>
 
