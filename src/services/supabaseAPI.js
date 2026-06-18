@@ -13,7 +13,14 @@ const headers = {
 // ─── USERS ────────────────────────────────────────────────────────────────────
 
 export const usersAPI = {
-  // Login: cari user by email + password
+  async fetchAll() {
+    const res = await axios.get(`${BASE_URL}/users`, {
+      headers,
+      params: { select: '*', order: 'id.desc' },
+    })
+    return res.data
+  },
+
   async login(email, password) {
     const res = await axios.get(`${BASE_URL}/users`, {
       headers,
@@ -23,13 +30,11 @@ export const usersAPI = {
     return res.data[0]
   },
 
-  // Register: tambah user baru
   async register(data) {
     const res = await axios.post(`${BASE_URL}/users`, data, { headers })
     return res.data[0]
   },
 
-  // Cek apakah email sudah terdaftar
   async checkEmail(email) {
     const res = await axios.get(`${BASE_URL}/users`, {
       headers,
@@ -37,12 +42,26 @@ export const usersAPI = {
     })
     return res.data.length > 0
   },
+
+  async update(id, data) {
+    const res = await axios.patch(`${BASE_URL}/users`, data, {
+      headers,
+      params: { id: `eq.${id}` },
+    })
+    return res.data[0]
+  },
+
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/users`, {
+      headers,
+      params: { id: `eq.${id}` },
+    })
+  },
 }
 
 // ─── PASIEN ───────────────────────────────────────────────────────────────────
 
 export const pasienAPI = {
-  // Ambil semua data pasien
   async fetchAll() {
     const res = await axios.get(`${BASE_URL}/pasien`, {
       headers,
@@ -51,13 +70,11 @@ export const pasienAPI = {
     return res.data
   },
 
-  // Tambah pasien baru
   async create(data) {
     const res = await axios.post(`${BASE_URL}/pasien`, data, { headers })
     return res.data[0]
   },
 
-  // Update pasien by id
   async update(id, data) {
     const res = await axios.patch(`${BASE_URL}/pasien`, data, {
       headers,
@@ -66,7 +83,6 @@ export const pasienAPI = {
     return res.data[0]
   },
 
-  // Hapus pasien by id
   async delete(id) {
     await axios.delete(`${BASE_URL}/pasien`, {
       headers,

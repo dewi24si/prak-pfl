@@ -14,6 +14,7 @@ const Riwayat      = React.lazy(() => import('./pages/Riwayat'))
 const Loyalitas    = React.lazy(() => import('./pages/Loyalitas'))
 const Laporan      = React.lazy(() => import('./pages/Laporan'))
 const Components   = React.lazy(() => import('./pages/Components'))
+const Users        = React.lazy(() => import('./pages/Users'))
 const NotFound     = React.lazy(() => import('./pages/NotFound'))
 
 const Login        = React.lazy(() => import('./pages/auth/Login'))
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/loyalitas"    element={<Loyalitas />} />
           <Route path="/laporan"      element={<Laporan />} />
           <Route path="/components"   element={<Components />} />
+          <Route path="/users"        element={<Users />} />
         </Route>
 
         <Route element={<AuthLayout />}>

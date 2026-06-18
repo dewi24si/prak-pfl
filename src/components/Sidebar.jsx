@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   MdDashboard, MdPerson, MdCalendarToday, MdPayment,
   MdHistory, MdStars, MdBarChart, MdChevronRight, MdChevronLeft,
-  MdWidgets
+  MdWidgets, MdManageAccounts
 } from 'react-icons/md'
 import { FaTooth } from 'react-icons/fa'
 
@@ -14,7 +14,8 @@ const menuItems = [
   { to: '/pembayaran', Icon: MdPayment,       label: 'Pembayaran' },
   { to: '/riwayat',    Icon: MdHistory,       label: 'Riwayat Perawatan' },
   { to: '/loyalitas',  Icon: MdStars,         label: 'Program Loyalitas' },
-  { to: '/laporan',    Icon: MdBarChart,      label: 'Laporan' },
+  { to: '/laporan',    Icon: MdBarChart,       label: 'Laporan' },
+  { to: '/users',      Icon: MdManageAccounts, label: 'Users' },
 ]
 
 const devItems = [
