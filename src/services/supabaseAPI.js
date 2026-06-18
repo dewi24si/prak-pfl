@@ -90,3 +90,75 @@ export const pasienAPI = {
     })
   },
 }
+
+// ─── JADWAL ───────────────────────────────────────────────────────────────────
+
+export const jadwalAPI = {
+  async fetchAll() {
+    const res = await axios.get(`${BASE_URL}/jadwal`, {
+      headers, params: { select: '*', order: 'tanggal.desc,jam.desc' },
+    })
+    return res.data
+  },
+  async create(data) {
+    const res = await axios.post(`${BASE_URL}/jadwal`, data, { headers })
+    return res.data[0]
+  },
+  async update(id, data) {
+    const res = await axios.patch(`${BASE_URL}/jadwal`, data, {
+      headers, params: { id: `eq.${id}` },
+    })
+    return res.data[0]
+  },
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/jadwal`, { headers, params: { id: `eq.${id}` } })
+  },
+}
+
+// ─── PEMBAYARAN ───────────────────────────────────────────────────────────────
+
+export const pembayaranAPI = {
+  async fetchAll() {
+    const res = await axios.get(`${BASE_URL}/pembayaran`, {
+      headers, params: { select: '*', order: 'tanggal.desc' },
+    })
+    return res.data
+  },
+  async create(data) {
+    const res = await axios.post(`${BASE_URL}/pembayaran`, data, { headers })
+    return res.data[0]
+  },
+  async update(id, data) {
+    const res = await axios.patch(`${BASE_URL}/pembayaran`, data, {
+      headers, params: { id: `eq.${id}` },
+    })
+    return res.data[0]
+  },
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/pembayaran`, { headers, params: { id: `eq.${id}` } })
+  },
+}
+
+// ─── RIWAYAT ──────────────────────────────────────────────────────────────────
+
+export const riwayatAPI = {
+  async fetchAll() {
+    const res = await axios.get(`${BASE_URL}/riwayat`, {
+      headers, params: { select: '*', order: 'tanggal.desc' },
+    })
+    return res.data
+  },
+  async create(data) {
+    const res = await axios.post(`${BASE_URL}/riwayat`, data, { headers })
+    return res.data[0]
+  },
+  async update(id, data) {
+    const res = await axios.patch(`${BASE_URL}/riwayat`, data, {
+      headers, params: { id: `eq.${id}` },
+    })
+    return res.data[0]
+  },
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/riwayat`, { headers, params: { id: `eq.${id}` } })
+  },
+}
