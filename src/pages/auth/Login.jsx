@@ -1,26 +1,33 @@
 import { useState } from 'react'
 import { useNavigate, NavLink } from 'react-router-dom'
-import axios from 'axios'
 import InputField from '../../components/InputField'
 import Button from '../../components/Button'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
+import { usersAPI } from '../../services/supabaseAPI'
 
 export default function Login() {
   const navigate = useNavigate()
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
-  const [dataForm, setDataForm] = useState({ username: '', password: '' })
+  const [dataForm, setDataForm] = useState({ email: '', password: '' })
 
   const handleChange = e => setDataForm({ ...dataForm, [e.target.name]: e.target.value })
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault()
-    setLoading(true); setError('')
-    axios.post('https://dummyjson.com/auth/login', dataForm)
-      .then(r => { if (r.status === 200) navigate('/dashboard') })
-      .catch(e => setError(e.response?.data?.message || e.message || 'Terjadi kesalahan'))
-      .finally(() => setLoading(false))
+    setLoading(true)
+    setError('')
+    try {
+      const user = await usersAPI.login(dataForm.email, dataForm.password)
+      // Simpan data user ke sessionStorage
+      sessionStorage.setItem('user', JSON.stringify(user))
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Terjadi kesalahan saat login')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -45,8 +52,8 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <InputField label="Username" name="username" value={dataForm.username}
-          onChange={handleChange} placeholder="emilys" required/>
+        <InputField label="Email" name="email" type="email" value={dataForm.email}
+          onChange={handleChange} placeholder="email@klinik.com" required/>
         <InputField label="Password" name="password" type="password" value={dataForm.password}
           onChange={handleChange} placeholder="••••••••" required/>
         <div className="flex items-center justify-between">
