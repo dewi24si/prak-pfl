@@ -31,7 +31,7 @@ export default function Users() {
       const result = await usersAPI.fetchAll()
       setData(result)
     } catch (err) {
-      setError('Gagal memuat data users')
+      setError(err.message || 'Gagal memuat data users')
     } finally {
       setLoading(false)
     }

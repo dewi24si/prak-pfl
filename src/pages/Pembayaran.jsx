@@ -9,13 +9,13 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdReceiptLong, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { pembayaranAPI } from '../services/supabaseAPI'
+import { pembayaranAPI, pasienAPI } from '../services/supabaseAPI'
 
 const statusType   = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
 const tabs         = ['All', 'Lunas', 'Belum Lunas']
 const tindakanList = ['Scaling', 'Tambal Gigi', 'Cabut Gigi', 'Konsultasi', 'Pemasangan Behel', 'Veneer', 'Bleaching', 'Implan']
 const metodeBayar  = ['Cash', 'Transfer Bank', 'QRIS', 'BPJS', 'Kartu Kredit']
-const emptyForm    = { nama_pasien: '', jenis_perawatan: 'Scaling', tanggal: '', biaya: '', metode_bayar: 'Cash', status: 'Belum Lunas', catatan: '' }
+const emptyForm    = { pasien_id: '', nama_pasien: '', jenis_perawatan: 'Scaling', tanggal: '', biaya: '', metode_bayar: 'Cash', status: 'Belum Lunas', catatan: '' }
 
 const formatRupiah = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : 'Rp 0'
 
@@ -29,8 +29,14 @@ export default function Pembayaran() {
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
+  const [pasienList, setPasienList] = useState([])
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData(); loadPasien() }, [])
+
+  const loadPasien = async () => {
+    try { setPasienList(await pasienAPI.fetchAll()) }
+    catch { /* dropdown pasien gagal dimuat, biarkan kosong */ }
+  }
 
   const loadData = async () => {
     try { setLoading(true); setError(''); const r = await pembayaranAPI.fetchAll(); setData(r) }
@@ -40,16 +46,22 @@ export default function Pembayaran() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
+  const handlePasienChange = e => {
+    const id = e.target.value
+    const pasien = pasienList.find(p => String(p.id) === String(id))
+    setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
+  }
+
   const handleOpenAdd  = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
   const handleOpenEdit = p => {
     setEditId(p.id)
-    setForm({ nama_pasien: p.nama_pasien, jenis_perawatan: p.jenis_perawatan, tanggal: p.tanggal, biaya: p.biaya, metode_bayar: p.metode_bayar, status: p.status, catatan: p.catatan || '' })
+    setForm({ pasien_id: p.pasien_id || '', nama_pasien: p.nama_pasien, jenis_perawatan: p.jenis_perawatan, tanggal: p.tanggal, biaya: p.biaya, metode_bayar: p.metode_bayar, status: p.status, catatan: p.catatan || '' })
     setShowModal(true)
   }
 
   const handleSubmit = async e => {
     e?.preventDefault()
-    if (!form.nama_pasien || !form.tanggal) return
+    if (!form.pasien_id || !form.tanggal) return
     setLoading(true); setError('')
     try {
       const payload = { ...form, biaya: Number(form.biaya) || 0 }
@@ -145,7 +157,8 @@ export default function Pembayaran() {
         title={editId ? 'Edit Pembayaran' : 'Tambah Pembayaran'}
         footer={<div className="flex gap-3"><Button type="outline" fullWidth onClick={() => { setShowModal(false); setEditId(null) }}>Batal</Button><Button type="primary" fullWidth onClick={handleSubmit} disabled={loading}>{loading ? 'Menyimpan...' : 'Simpan'}</Button></div>}>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <InputField label="Nama Pasien" name="nama_pasien" value={form.nama_pasien} onChange={handleChange} required placeholder="Nama pasien"/>
+          <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
+            options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
             <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""/>
             <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>

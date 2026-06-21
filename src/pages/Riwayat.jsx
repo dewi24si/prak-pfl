@@ -9,12 +9,12 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { riwayatAPI } from '../services/supabaseAPI'
+import { riwayatAPI, pasienAPI } from '../services/supabaseAPI'
 
 const tindakanType = { 'Scaling':'primary','Tambal Gigi':'success','Konsultasi':'purple','Cabut Gigi':'danger','Pemasangan Behel':'warning','Veneer':'pink','Bleaching':'primary','Implan':'success' }
 const tindakanList = ['Scaling','Tambal Gigi','Cabut Gigi','Konsultasi','Pemasangan Behel','Veneer','Bleaching','Implan']
 const dokterList   = ['drg. Sari','drg. Budi','drg. Rina','drg. Hendra']
-const emptyForm    = { nama_pasien: '', dokter: 'drg. Sari', tindakan: 'Scaling', tanggal: '', biaya: '', catatan: '' }
+const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tindakan: 'Scaling', tanggal: '', biaya: '', catatan: '' }
 
 const formatRupiah = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : '-'
 
@@ -27,8 +27,14 @@ export default function Riwayat() {
   const [editId, setEditId]       = useState(null)
   const [form, setForm]           = useState(emptyForm)
   const [search, setSearch]       = useState('')
+  const [pasienList, setPasienList] = useState([])
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData(); loadPasien() }, [])
+
+  const loadPasien = async () => {
+    try { setPasienList(await pasienAPI.fetchAll()) }
+    catch { /* dropdown pasien gagal dimuat, biarkan kosong */ }
+  }
 
   const loadData = async () => {
     try { setLoading(true); setError(''); const r = await riwayatAPI.fetchAll(); setData(r) }
@@ -38,16 +44,22 @@ export default function Riwayat() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
+  const handlePasienChange = e => {
+    const id = e.target.value
+    const pasien = pasienList.find(p => String(p.id) === String(id))
+    setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
+  }
+
   const handleOpenAdd  = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
   const handleOpenEdit = r => {
     setEditId(r.id)
-    setForm({ nama_pasien: r.nama_pasien, dokter: r.dokter, tindakan: r.tindakan, tanggal: r.tanggal, biaya: r.biaya || '', catatan: r.catatan || '' })
+    setForm({ pasien_id: r.pasien_id || '', nama_pasien: r.nama_pasien, dokter: r.dokter, tindakan: r.tindakan, tanggal: r.tanggal, biaya: r.biaya || '', catatan: r.catatan || '' })
     setShowModal(true)
   }
 
   const handleSubmit = async e => {
     e?.preventDefault()
-    if (!form.nama_pasien || !form.tanggal) return
+    if (!form.pasien_id || !form.tanggal) return
     setLoading(true); setError('')
     try {
       const payload = { ...form, biaya: Number(form.biaya) || 0 }
@@ -119,7 +131,8 @@ export default function Riwayat() {
         title={editId ? 'Edit Riwayat' : 'Tambah Riwayat'}
         footer={<div className="flex gap-3"><Button type="outline" fullWidth onClick={() => { setShowModal(false); setEditId(null) }}>Batal</Button><Button type="primary" fullWidth onClick={handleSubmit} disabled={loading}>{loading ? 'Menyimpan...' : 'Simpan'}</Button></div>}>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <InputField label="Nama Pasien" name="nama_pasien" value={form.nama_pasien} onChange={handleChange} required placeholder="Nama pasien"/>
+          <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
+            options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
             <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
             <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleChange} options={tindakanList} placeholder=""/>

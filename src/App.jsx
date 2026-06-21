@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Loading from './components/Loading'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const MainLayout  = React.lazy(() => import('./layouts/MainLayout'))
 const AuthLayout  = React.lazy(() => import('./layouts/AuthLayout'))
@@ -27,7 +28,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        <Route element={<MainLayout />}>
+        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route path="/dashboard"    element={<Dashboard />} />
           <Route path="/pasien"       element={<Pasien />} />
           <Route path="/pasien/:id"   element={<PasienDetail />} />

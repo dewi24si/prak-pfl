@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import InputField from "./InputField";
 import SelectField from "./SelectField";
 import "./form.css";
@@ -145,14 +145,14 @@ export default function HealthForm() {
   });
   const allValid = fields.every((f) => !errors[f]);
 
-  const handleChange = useCallback((field, val) => {
+  const handleChange = (field, val) => {
     setValues((v) => ({ ...v, [field]: val }));
     setTouched((t) => ({ ...t, [field]: true }));
-  }, []);
+  };
 
-  const handleBlur = useCallback((field) => {
+  const handleBlur = (field) => {
     setTouched((t) => ({ ...t, [field]: true }));
-  }, []);
+  };
 
   function handleSubmit() {
     const allTouched = {};

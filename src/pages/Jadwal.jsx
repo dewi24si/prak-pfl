@@ -9,13 +9,13 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { jadwalAPI } from '../services/supabaseAPI'
+import { jadwalAPI, pasienAPI } from '../services/supabaseAPI'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const tabs         = ['All', 'Terjadwal', 'Selesai', 'Dibatalkan']
 const tindakanList = ['Scaling', 'Tambal Gigi', 'Cabut Gigi', 'Konsultasi', 'Pemasangan Behel', 'Veneer', 'Bleaching', 'Implan']
 const dokterList   = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
-const emptyForm    = { nama_pasien: '', dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', status: 'Terjadwal', catatan: '' }
+const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', status: 'Terjadwal', catatan: '' }
 
 export default function Jadwal() {
   const [data, setData]           = useState([])
@@ -27,8 +27,14 @@ export default function Jadwal() {
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
+  const [pasienList, setPasienList] = useState([])
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData(); loadPasien() }, [])
+
+  const loadPasien = async () => {
+    try { setPasienList(await pasienAPI.fetchAll()) }
+    catch { /* dropdown pasien gagal dimuat, biarkan kosong */ }
+  }
 
   const loadData = async () => {
     try { setLoading(true); setError(''); const r = await jadwalAPI.fetchAll(); setData(r) }
@@ -38,16 +44,22 @@ export default function Jadwal() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
+  const handlePasienChange = e => {
+    const id = e.target.value
+    const pasien = pasienList.find(p => String(p.id) === String(id))
+    setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
+  }
+
   const handleOpenAdd = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
   const handleOpenEdit = j => {
     setEditId(j.id)
-    setForm({ nama_pasien: j.nama_pasien, dokter: j.dokter, tanggal: j.tanggal, jam: j.jam, jenis_perawatan: j.jenis_perawatan, status: j.status, catatan: j.catatan || '' })
+    setForm({ pasien_id: j.pasien_id || '', nama_pasien: j.nama_pasien, dokter: j.dokter, tanggal: j.tanggal, jam: j.jam, jenis_perawatan: j.jenis_perawatan, status: j.status, catatan: j.catatan || '' })
     setShowModal(true)
   }
 
   const handleSubmit = async e => {
     e?.preventDefault()
-    if (!form.nama_pasien || !form.tanggal || !form.jam) return
+    if (!form.pasien_id || !form.tanggal || !form.jam) return
     setLoading(true); setError('')
     try {
       editId ? await jadwalAPI.update(editId, form) : await jadwalAPI.create(form)
@@ -140,7 +152,8 @@ export default function Jadwal() {
         title={editId ? 'Edit Jadwal' : 'Tambah Jadwal'}
         footer={<div className="flex gap-3"><Button type="outline" fullWidth onClick={() => { setShowModal(false); setEditId(null) }}>Batal</Button><Button type="primary" fullWidth onClick={handleSubmit} disabled={loading}>{loading ? 'Menyimpan...' : 'Simpan'}</Button></div>}>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <InputField label="Nama Pasien" name="nama_pasien" value={form.nama_pasien} onChange={handleChange} required placeholder="Nama pasien"/>
+          <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
+            options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
             <InputField label="Jam" name="jam" type="time" value={form.jam} onChange={handleChange} required/>
