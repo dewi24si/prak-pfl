@@ -7,6 +7,7 @@ import Badge from '../components/Badge'
 import Card from '../components/Card'
 import Spinner from '../components/Spinner'
 import { pasienAPI, jadwalAPI, pembayaranAPI, riwayatAPI } from '../services/supabaseAPI'
+import { useAuth } from '../context/useAuth'
 
 const tierType = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
 const getTier  = p => p >= 100 ? 'Gold' : p >= 50 ? 'Silver' : 'Bronze'
@@ -37,17 +38,19 @@ export default function Dashboard() {
   const bulanIni       = new Date().toISOString().slice(0, 7)
   const pasienBulanIni = pasien.filter(p => p.tanggal_registrasi?.startsWith(bulanIni))
   const recentPasien   = [...pasien].slice(0, 5)
-  const jadwalAktif    = jadwal.filter(j => j.status === 'Terjadwal').slice(0, 5)
+  const jadwalHariIniList = jadwalHariIni
+    .filter(j => j.status === 'Terjadwal')
+    .sort((a, b) => a.jam.localeCompare(b.jam))
 
   const stats = [
-    { Icon: MdPerson,        label: 'Total Pasien',         value: String(pasien.length),       change: `+${pasienBulanIni.length} bulan ini`, up: true,  color: 'text-biru',   bg: 'bg-biru-muda'   },
-    { Icon: MdCalendarToday, label: 'Jadwal Hari Ini',      value: String(jadwalHariIni.length), change: `${jadwal.filter(j=>j.status==='Terjadwal').length} terjadwal`, up: true, color: 'text-hijau', bg: 'bg-hijau-muda' },
-    { Icon: MdPayment,       label: 'Total Pendapatan',     value: formatRp(totalPendapatan),   change: `${bayar.filter(b=>b.status==='Lunas').length} transaksi`, up: true, color: 'text-kuning', bg: 'bg-kuning-muda' },
-    { Icon: MdTrendingUp,    label: 'Riwayat Perawatan',   value: String(riwayat.length),      change: 'total tindakan', up: true, color: 'text-ungu', bg: 'bg-ungu-muda' },
+    { icon: MdPerson,        label: 'Total Pasien',         value: String(pasien.length),       change: `+${pasienBulanIni.length} bulan ini`, up: true,  color: 'text-biru',   bg: 'bg-biru-muda'   },
+    { icon: MdCalendarToday, label: 'Jadwal Hari Ini',      value: String(jadwalHariIni.length), change: `${jadwal.filter(j=>j.status==='Terjadwal').length} terjadwal`, up: true, color: 'text-hijau', bg: 'bg-hijau-muda' },
+    { icon: MdPayment,       label: 'Total Pendapatan',     value: formatRp(totalPendapatan),   change: `${bayar.filter(b=>b.status==='Lunas').length} transaksi`, up: true, color: 'text-kuning', bg: 'bg-kuning-muda' },
+    { icon: MdTrendingUp,    label: 'Riwayat Perawatan',   value: String(riwayat.length),      change: 'total tindakan', up: true, color: 'text-ungu', bg: 'bg-ungu-muda' },
   ]
 
   // Data user yang login
-  const user = JSON.parse(sessionStorage.getItem('user') || '{}')
+  const { user } = useAuth()
 
   return (
     <div id="dashboard-container">
@@ -57,7 +60,7 @@ export default function Dashboard() {
       <div className="bg-biru rounded-2xl p-6 mb-6 relative overflow-hidden flex items-center gap-5">
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full"/>
         <div className="absolute bottom-0 right-28 w-24 h-24 bg-white/5 rounded-full translate-y-1/2"/>
-        <Avatar src="https://avatar.iran.liara.run/public/girl/5" name="Admin" size="lg"/>
+        <Avatar name={user?.email || 'Admin'} size="lg"/>
         <div className="relative z-10 flex-1">
           <p className="text-white/60 text-sm">Welcome back,</p>
           <h2 className="text-white text-xl font-bold">{user.email || 'Admin'}</h2>
@@ -85,11 +88,11 @@ export default function Dashboard() {
                 <h3 className="font-bold text-teks">Jadwal Hari Ini</h3>
                 <p className="text-xs text-teks-samping mt-0.5">{new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}</p>
               </div>
-              {jadwalAktif.length === 0 ? (
-                <div className="text-center py-10 text-teks-samping text-sm">Tidak ada jadwal aktif</div>
+              {jadwalHariIniList.length === 0 ? (
+                <div className="text-center py-10 text-teks-samping text-sm">Tidak ada jadwal hari ini</div>
               ) : (
                 <div className="divide-y divide-garis">
-                  {jadwalAktif.map(j => (
+                  {jadwalHariIniList.map(j => (
                     <div key={j.id} className="px-5 py-3.5 flex items-center gap-3">
                       <div className="w-10 h-10 bg-biru-muda rounded-xl flex items-center justify-center flex-shrink-0">
                         <MdCalendarToday className="text-biru text-lg"/>

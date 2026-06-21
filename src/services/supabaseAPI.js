@@ -43,6 +43,14 @@ export const usersAPI = {
     return res.data.length > 0
   },
 
+  async findByEmail(email) {
+    const res = await axios.get(`${BASE_URL}/users`, {
+      headers,
+      params: { email: `eq.${email}`, select: 'id,email' },
+    })
+    return res.data[0] || null
+  },
+
   async update(id, data) {
     const res = await axios.patch(`${BASE_URL}/users`, data, {
       headers,
@@ -68,6 +76,15 @@ export const pasienAPI = {
       params: { select: '*', order: 'id.desc' },
     })
     return res.data
+  },
+
+  async fetchById(id) {
+    const res = await axios.get(`${BASE_URL}/pasien`, {
+      headers,
+      params: { id: `eq.${id}`, select: '*' },
+    })
+    if (res.data.length === 0) throw new Error('Pasien tidak ditemukan')
+    return res.data[0]
   },
 
   async create(data) {

@@ -9,14 +9,14 @@ import SelectField from '../components/SelectField'
 import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
-import { MdPersonAdd, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
+import { MdPersonAdd, MdEdit, MdDelete, MdSearch, MdVisibility } from 'react-icons/md'
+import { Link } from 'react-router-dom'
 import { pasienAPI } from '../services/supabaseAPI'
 
-const statusOptions  = ['Aktif', 'Tidak Aktif']
-const loyalitasMap   = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
-const loyalitasOpts  = ['Bronze', 'Silver', 'Gold']
-const dokterOptions  = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
-const tiers          = ['All', 'Bronze', 'Silver', 'Gold']
+const statusOptions = ['Aktif', 'Tidak Aktif']
+const loyalitasMap  = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
+const dokterOptions = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
+const tiers         = ['All', 'Bronze', 'Silver', 'Gold']
 
 const emptyForm = {
   nama_lengkap: '', jenis_kelamin: 'Laki-laki', tanggal_lahir: '',
@@ -38,16 +38,12 @@ export default function Pasien() {
   const [search, setSearch]       = useState('')
   const searchRef = useRef(null)
 
-  // Auto focus search saat halaman dibuka
   useEffect(() => { searchRef.current?.focus() }, [])
-
-  // Load data saat pertama render
   useEffect(() => { loadData() }, [])
 
   const loadData = async () => {
     try {
-      setLoading(true)
-      setError('')
+      setLoading(true); setError('')
       const result = await pasienAPI.fetchAll()
       setData(result)
     } catch (err) {
@@ -60,11 +56,7 @@ export default function Pasien() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const handleOpenAdd = () => {
-    setEditId(null)
-    setForm(emptyForm)
-    setShowModal(true)
-  }
+  const handleOpenAdd = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
 
   const handleOpenEdit = (pasien) => {
     setEditId(pasien.id)
@@ -89,8 +81,7 @@ export default function Pasien() {
   const handleSubmit = async e => {
     e.preventDefault()
     if (!form.nama_lengkap) return
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       if (editId) {
         await pasienAPI.update(editId, form)
@@ -99,11 +90,8 @@ export default function Pasien() {
         await pasienAPI.create(form)
         setSuccess('Pasien baru berhasil ditambahkan!')
       }
-      setShowModal(false)
-      setForm(emptyForm)
-      setEditId(null)
-      loadData()
-      setTimeout(() => setSuccess(''), 3000)
+      setShowModal(false); setForm(emptyForm); setEditId(null)
+      loadData(); setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       setError('Gagal menyimpan data: ' + err.message)
     } finally {
@@ -117,8 +105,7 @@ export default function Pasien() {
     try {
       await pasienAPI.delete(id)
       setSuccess('Pasien berhasil dihapus!')
-      loadData()
-      setTimeout(() => setSuccess(''), 3000)
+      loadData(); setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       setError('Gagal menghapus data: ' + err.message)
     } finally {
@@ -126,7 +113,6 @@ export default function Pasien() {
     }
   }
 
-  // Tentukan tier loyalitas berdasarkan poin
   const getTier = (poin) => {
     if (poin >= 100) return 'Gold'
     if (poin >= 50)  return 'Silver'
@@ -150,12 +136,10 @@ export default function Pasien() {
         </Button>
       </PageHeader>
 
-      {/* Alert */}
       {error   && <div className="mb-4"><Alert type="danger"  message={error}   onClose={() => setError('')}/></div>}
       {success && <div className="mb-4"><Alert type="success" message={success} onClose={() => setSuccess('')}/></div>}
 
       <div className="bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.06)] overflow-hidden">
-        {/* Tabs + search */}
         <div className="flex items-center justify-between px-5 pt-4 pb-0 border-b border-garis flex-wrap gap-3">
           <div className="flex items-center gap-1">
             {tiers.map(t => (
@@ -167,17 +151,12 @@ export default function Pasien() {
           </div>
           <div className="relative mb-3">
             <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-teks-samping text-lg"/>
-            <input
-              ref={searchRef}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+            <input ref={searchRef} value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search..."
-              className="pl-9 pr-4 py-2 border border-garis rounded-full text-sm outline-none focus:border-biru bg-latar w-48 placeholder:text-teks-samping"
-            />
+              className="pl-9 pr-4 py-2 border border-garis rounded-full text-sm outline-none focus:border-biru bg-latar w-48 placeholder:text-teks-samping"/>
           </div>
         </div>
 
-        {/* Loading state */}
         {loading && (
           <div className="flex items-center justify-center gap-3 py-10 text-teks-samping">
             <Spinner size="sm" color="biru"/>
@@ -185,32 +164,22 @@ export default function Pasien() {
           </div>
         )}
 
-        {/* Empty state */}
         {!loading && filtered.length === 0 && (
-          <div className="text-center py-12 text-teks-samping text-sm">
-            Belum ada data pasien.
-          </div>
+          <div className="text-center py-12 text-teks-samping text-sm">Belum ada data pasien.</div>
         )}
 
-        {/* Tabel */}
         {!loading && filtered.length > 0 && (
           <Table headers={['Avatar', 'Nama Lengkap', 'Email', 'No. HP', 'Dokter', 'Tier', 'Status', 'Aksi']}>
             {filtered.map(p => {
               const tier = getTier(p.poin_loyalitas)
               return (
                 <tr key={p.id} className="hover:bg-latar transition-colors">
-                  <td className="px-3 py-3.5">
-                    <Avatar name={p.nama_lengkap} size="sm"/>
-                  </td>
-                  <td className="px-3 py-3.5 font-semibold text-teks">
-                    {p.nama_lengkap}
-                  </td>
+                  <td className="px-3 py-3.5"><Avatar name={p.nama_lengkap} size="sm"/></td>
+                  <td className="px-3 py-3.5 font-semibold text-teks">{p.nama_lengkap}</td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{p.email || '-'}</td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{p.no_hp || '-'}</td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{p.dokter_penanggung_jawab || '-'}</td>
-                  <td className="px-3 py-3.5">
-                    <Badge type={loyalitasMap[tier]}>{tier}</Badge>
-                  </td>
+                  <td className="px-3 py-3.5"><Badge type={loyalitasMap[tier]}>{tier}</Badge></td>
                   <td className="px-3 py-3.5">
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${p.status_pasien === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                       {p.status_pasien}
@@ -218,12 +187,19 @@ export default function Pasien() {
                   </td>
                   <td className="px-3 py-3.5">
                     <div className="flex items-center gap-1.5">
+                      <Link to={`/pasien/${p.id}`}
+                        className="p-1.5 rounded-lg hover:bg-hijau-muda text-teks-samping hover:text-hijau transition-colors"
+                        title="Lihat Detail">
+                        <MdVisibility/>
+                      </Link>
                       <button onClick={() => handleOpenEdit(p)}
-                        className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors">
+                        className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"
+                        title="Edit">
                         <MdEdit/>
                       </button>
                       <button onClick={() => handleDelete(p.id, p.nama_lengkap)}
-                        className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors">
+                        className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"
+                        title="Hapus">
                         <MdDelete/>
                       </button>
                     </div>
@@ -239,7 +215,6 @@ export default function Pasien() {
         </div>
       </div>
 
-      {/* Modal Tambah/Edit */}
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
         title={editId ? 'Edit Data Pasien' : 'Add New Patient'}
         size="lg"
@@ -275,10 +250,11 @@ export default function Pasien() {
           <InputField label="Keluhan Utama" name="keluhan_utama" value={form.keluhan_utama}
             onChange={handleChange} placeholder="Keluhan awal pasien"/>
           <InputField label="Riwayat Perawatan" name="riwayat_perawatan" value={form.riwayat_perawatan}
-            onChange={handleChange} placeholder="Riwayat tindakan medis"/>
+            onChange={handleChange} placeholder="Riwayat tindakan medis sebelumnya"/>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Jadwal Kontrol Berikutnya" name="jadwal_kontrol" type="date"
-              value={form.jadwal_kontrol} onChange={handleChange}/>
+            <InputField label="Rekomendasi Kontrol Berikutnya" name="jadwal_kontrol" type="date"
+              value={form.jadwal_kontrol} onChange={handleChange}
+              hint="Tanggal rekomendasi kontrol dari dokter"/>
             <SelectField label="Dokter Penanggung Jawab" name="dokter_penanggung_jawab"
               value={form.dokter_penanggung_jawab} onChange={handleChange}
               options={dokterOptions} placeholder=""/>
