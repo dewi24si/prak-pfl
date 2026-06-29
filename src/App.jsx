@@ -21,12 +21,13 @@ const NotFound     = React.lazy(() => import('./pages/NotFound'))
 const Login        = React.lazy(() => import('./pages/auth/Login'))
 const Register     = React.lazy(() => import('./pages/auth/Register'))
 const Forgot       = React.lazy(() => import('./pages/auth/Forgot'))
+const LandingPage  = React.lazy(() => import('./pages/LandingPage'))
 
 export default function App() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
 
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route path="/dashboard"    element={<Dashboard />} />
