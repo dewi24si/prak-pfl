@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { useNavigate, NavLink } from 'react-router-dom'
 import InputField from '../../components/InputField'
+import SelectField from '../../components/SelectField'
 import Button from '../../components/Button'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
 import { usersAPI, pasienAPI } from '../../services/supabaseAPI'
+import { useAuth } from '../../context/useAuth'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [success, setSuccess] = useState('')
   const [dataForm, setDataForm] = useState({
-    nama_lengkap: '', no_hp: '', email: '', password: '', confirmPassword: ''
+    nama_lengkap: '', jenis_kelamin: '', no_hp: '', email: '', password: '', confirmPassword: ''
   })
 
   const handleChange = e => setDataForm({ ...dataForm, [e.target.name]: e.target.value })
@@ -48,15 +51,17 @@ export default function Register() {
 
       // Setiap akun baru otomatis punya profil pasien miliknya sendiri,
       // supaya bisa langsung booking jadwal setelah login.
-      await pasienAPI.create({
+      const pasien = await pasienAPI.create({
         nama_lengkap: dataForm.nama_lengkap,
+        jenis_kelamin: dataForm.jenis_kelamin,
         no_hp: dataForm.no_hp,
         email: dataForm.email,
         user_id: account.id,
       })
 
-      setSuccess('Akun berhasil dibuat! Silakan login.')
-      setTimeout(() => navigate('/login'), 2000)
+      setSuccess('Akun berhasil dibuat! Mengalihkan ke dashboard...')
+      login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap })
+      setTimeout(() => navigate('/pasien/dashboard'), 1200)
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat registrasi')
     } finally {
@@ -93,6 +98,8 @@ export default function Register() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <InputField label="Nama Lengkap" name="nama_lengkap" value={dataForm.nama_lengkap}
           onChange={handleChange} placeholder="Nama sesuai KTP" required/>
+        <SelectField label="Jenis Kelamin" name="jenis_kelamin" value={dataForm.jenis_kelamin}
+          onChange={handleChange} options={['Laki-laki', 'Perempuan']} placeholder="Pilih jenis kelamin" required/>
         <InputField label="No. HP / WhatsApp" name="no_hp" value={dataForm.no_hp}
           onChange={handleChange} placeholder="08xx-xxxx-xxxx" required/>
         <InputField label="Email" name="email" type="email" value={dataForm.email}

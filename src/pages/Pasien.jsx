@@ -132,7 +132,7 @@ export default function Pasien() {
     <div>
       <PageHeader title="Data Pasien" breadcrumb={['Beranda', 'Data Pasien']}>
         <Button type="primary" icon={<MdPersonAdd/>} onClick={handleOpenAdd}>
-          Add New Patient
+          Tambah Pasien Baru
         </Button>
       </PageHeader>
 
@@ -216,7 +216,7 @@ export default function Pasien() {
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
-        title={editId ? 'Edit Data Pasien' : 'Add New Patient'}
+        title={editId ? 'Edit Data Pasien' : 'Tambah Pasien Baru'}
         size="lg"
         footer={
           <div className="flex gap-3">
@@ -227,6 +227,7 @@ export default function Pasien() {
           </div>
         }>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="text-xs font-bold text-teks-samping uppercase tracking-wider">Data Diri</p>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Nama Lengkap" name="nama_lengkap" value={form.nama_lengkap}
               onChange={handleChange} required placeholder="Nama pasien"/>
@@ -247,25 +248,33 @@ export default function Pasien() {
           </div>
           <InputField label="Alamat" name="alamat" value={form.alamat}
             onChange={handleChange} placeholder="Alamat lengkap pasien"/>
-          <InputField label="Keluhan Utama" name="keluhan_utama" value={form.keluhan_utama}
-            onChange={handleChange} placeholder="Keluhan awal pasien"/>
-          <InputField label="Riwayat Perawatan" name="riwayat_perawatan" value={form.riwayat_perawatan}
-            onChange={handleChange} placeholder="Riwayat tindakan medis sebelumnya"/>
+
+          <p className="text-xs font-bold text-teks-samping uppercase tracking-wider pt-2 border-t border-garis">Data Klinis</p>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Rekomendasi Kontrol Berikutnya" name="jadwal_kontrol" type="date"
-              value={form.jadwal_kontrol} onChange={handleChange}
-              hint="Tanggal rekomendasi kontrol dari dokter"/>
+            <InputField label="Keluhan Utama" name="keluhan_utama" value={form.keluhan_utama}
+              onChange={handleChange} placeholder="Keluhan awal pasien"/>
             <SelectField label="Dokter Penanggung Jawab" name="dokter_penanggung_jawab"
               value={form.dokter_penanggung_jawab} onChange={handleChange}
               options={dokterOptions} placeholder=""/>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <InputField label="Poin Loyalitas" name="poin_loyalitas" type="number"
-              value={form.poin_loyalitas} onChange={handleChange} placeholder="0"
-              hint="Bronze <50 | Silver 50-99 | Gold ≥100"/>
-          </div>
-          <InputField label="Catatan Dokter" name="catatan_dokter" value={form.catatan_dokter}
-            onChange={handleChange} placeholder="Catatan tambahan dari dokter"/>
+
+          {/* Field berikut hanya relevan setelah pasien pernah ditangani, jadi baru muncul saat edit */}
+          {editId && (
+            <>
+              <InputField label="Riwayat Perawatan" name="riwayat_perawatan" value={form.riwayat_perawatan}
+                onChange={handleChange} placeholder="Riwayat tindakan medis sebelumnya"/>
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="Rekomendasi Kontrol Berikutnya" name="jadwal_kontrol" type="date"
+                  value={form.jadwal_kontrol} onChange={handleChange}
+                  hint="Tanggal rekomendasi kontrol dari dokter"/>
+                <InputField label="Poin Loyalitas" name="poin_loyalitas" type="number"
+                  value={form.poin_loyalitas} onChange={handleChange} placeholder="0"
+                  hint="Bronze <50 | Silver 50-99 | Gold ≥100"/>
+              </div>
+              <InputField label="Catatan Dokter" name="catatan_dokter" value={form.catatan_dokter}
+                onChange={handleChange} placeholder="Catatan tambahan dari dokter"/>
+            </>
+          )}
         </form>
       </Modal>
     </div>
