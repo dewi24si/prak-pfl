@@ -187,7 +187,7 @@ export default function Pasien() {
                   </td>
                   <td className="px-3 py-3.5">
                     <div className="flex items-center gap-1.5">
-                      <Link to={`/pasien/${p.id}`}
+                      <Link to={`/admin/pasien/${p.id}`}
                         className="p-1.5 rounded-lg hover:bg-hijau-muda text-teks-samping hover:text-hijau transition-colors"
                         title="Lihat Detail">
                         <MdVisibility/>

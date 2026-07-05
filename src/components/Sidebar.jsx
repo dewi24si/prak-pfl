@@ -1,29 +1,10 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import {
-  MdDashboard, MdPerson, MdCalendarToday, MdPayment,
-  MdHistory, MdStars, MdBarChart, MdChevronRight, MdChevronLeft,
-  MdWidgets, MdManageAccounts, MdLogout
-} from 'react-icons/md'
+import { MdChevronRight, MdChevronLeft, MdLogout } from 'react-icons/md'
 import { FaTooth } from 'react-icons/fa'
 import { useAuth } from '../context/useAuth'
 
-const menuItems = [
-  { to: '/dashboard',  Icon: MdDashboard,      label: 'Dashboard' },
-  { to: '/pasien',     Icon: MdPerson,          label: 'Data Pasien' },
-  { to: '/jadwal',     Icon: MdCalendarToday,   label: 'Jadwal & Reminder' },
-  { to: '/pembayaran', Icon: MdPayment,         label: 'Pembayaran' },
-  { to: '/riwayat',    Icon: MdHistory,         label: 'Riwayat Perawatan' },
-  { to: '/loyalitas',  Icon: MdStars,           label: 'Program Loyalitas' },
-  { to: '/laporan',    Icon: MdBarChart,        label: 'Laporan' },
-  { to: '/users',      Icon: MdManageAccounts,  label: 'Users' },
-]
-
-const devItems = [
-  { to: '/components', Icon: MdWidgets, label: 'Components' },
-]
-
-export default function Sidebar() {
+export default function Sidebar({ menuItems, devItems = [] }) {
   const [collapsed, setCollapsed] = useState(false)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -53,7 +34,7 @@ export default function Sidebar() {
         {!collapsed && <p className="text-[10px] uppercase font-bold tracking-widest text-teks-samping mb-2 px-3">Menu</p>}
 
         {menuItems.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.to === '/dashboard'} title={collapsed ? item.label : undefined}
+          <NavLink key={item.to} to={item.to} end={item.end} title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
               `group flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150
                ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'}
@@ -74,29 +55,31 @@ export default function Sidebar() {
         ))}
 
         {/* Developer section */}
-        <div className="mt-4 pt-4 border-t border-garis">
-          {!collapsed && <p className="text-[10px] uppercase font-bold tracking-widest text-teks-samping mb-2 px-3">Developer</p>}
-          {devItems.map((item) => (
-            <NavLink key={item.to} to={item.to} title={collapsed ? item.label : undefined}
-              className={({ isActive }) =>
-                `group flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150
-                 ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'}
-                 ${isActive ? 'bg-biru-muda text-biru' : 'text-teks-samping hover:bg-latar hover:text-teks'}`
-              }>
-              {({ isActive }) => (
-                <>
-                  <item.Icon className={`text-[20px] flex-shrink-0 ${isActive ? 'text-biru' : ''}`} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-biru" />}
-                    </>
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
-        </div>
+        {devItems.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-garis">
+            {!collapsed && <p className="text-[10px] uppercase font-bold tracking-widest text-teks-samping mb-2 px-3">Developer</p>}
+            {devItems.map((item) => (
+              <NavLink key={item.to} to={item.to} title={collapsed ? item.label : undefined}
+                className={({ isActive }) =>
+                  `group flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150
+                   ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'}
+                   ${isActive ? 'bg-biru-muda text-biru' : 'text-teks-samping hover:bg-latar hover:text-teks'}`
+                }>
+                {({ isActive }) => (
+                  <>
+                    <item.Icon className={`text-[20px] flex-shrink-0 ${isActive ? 'text-biru' : ''}`} />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-biru" />}
+                      </>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* User card + Logout */}

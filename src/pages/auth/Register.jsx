@@ -4,7 +4,7 @@ import InputField from '../../components/InputField'
 import Button from '../../components/Button'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
-import { usersAPI } from '../../services/supabaseAPI'
+import { usersAPI, pasienAPI } from '../../services/supabaseAPI'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -12,7 +12,7 @@ export default function Register() {
   const [error, setError]     = useState('')
   const [success, setSuccess] = useState('')
   const [dataForm, setDataForm] = useState({
-    email: '', password: '', confirmPassword: '', role: 'user'
+    nama_lengkap: '', no_hp: '', email: '', password: '', confirmPassword: ''
   })
 
   const handleChange = e => setDataForm({ ...dataForm, [e.target.name]: e.target.value })
@@ -40,10 +40,19 @@ export default function Register() {
         return
       }
 
-      await usersAPI.register({
+      const account = await usersAPI.register({
         email: dataForm.email,
         password: dataForm.password,
-        role: dataForm.role,
+        role: 'user',
+      })
+
+      // Setiap akun baru otomatis punya profil pasien miliknya sendiri,
+      // supaya bisa langsung booking jadwal setelah login.
+      await pasienAPI.create({
+        nama_lengkap: dataForm.nama_lengkap,
+        no_hp: dataForm.no_hp,
+        email: dataForm.email,
+        user_id: account.id,
       })
 
       setSuccess('Akun berhasil dibuat! Silakan login.')
@@ -82,6 +91,10 @@ export default function Register() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField label="Nama Lengkap" name="nama_lengkap" value={dataForm.nama_lengkap}
+          onChange={handleChange} placeholder="Nama sesuai KTP" required/>
+        <InputField label="No. HP / WhatsApp" name="no_hp" value={dataForm.no_hp}
+          onChange={handleChange} placeholder="08xx-xxxx-xxxx" required/>
         <InputField label="Email" name="email" type="email" value={dataForm.email}
           onChange={handleChange} placeholder="email@klinik.com" required/>
         <InputField label="Password" name="password" type="password" value={dataForm.password}

@@ -4,7 +4,7 @@ import InputField from '../../components/InputField'
 import Button from '../../components/Button'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
-import { usersAPI } from '../../services/supabaseAPI'
+import { usersAPI, pasienAPI } from '../../services/supabaseAPI'
 import { useAuth } from '../../context/useAuth'
 
 export default function Login() {
@@ -20,9 +20,25 @@ export default function Login() {
     e.preventDefault()
     setLoading(true); setError('')
     try {
-      const user = await usersAPI.login(dataForm.email, dataForm.password)
-      login(user)
-      navigate('/dashboard')
+      const account = await usersAPI.login(dataForm.email, dataForm.password)
+
+      if (account.role === 'admin') {
+        login(account)
+        navigate('/admin/dashboard')
+        return
+      }
+
+      // Pasien: pastikan profil pasien miliknya sudah ada (akun lama belum tentu punya)
+      let pasien = await pasienAPI.findByUserId(account.id)
+      if (!pasien) {
+        pasien = await pasienAPI.create({
+          nama_lengkap: account.email.split('@')[0],
+          email: account.email,
+          user_id: account.id,
+        })
+      }
+      login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap })
+      navigate('/pasien/dashboard')
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat login')
     } finally {

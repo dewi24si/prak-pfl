@@ -72,7 +72,7 @@ export default function PasienDetail() {
     <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
       <MdPerson className="text-6xl text-teks-samping opacity-30"/>
       <p className="text-teks-samping font-medium">{error || 'Pasien tidak ditemukan.'}</p>
-      <Link to="/pasien" className="text-biru text-sm font-semibold hover:underline">← Kembali ke Data Pasien</Link>
+      <Link to="/admin/pasien" className="text-biru text-sm font-semibold hover:underline">← Kembali ke Data Pasien</Link>
     </div>
   )
 
@@ -80,7 +80,7 @@ export default function PasienDetail() {
 
   return (
     <div className="space-y-4">
-      <Link to="/pasien" className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
+      <Link to="/admin/pasien" className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
         <MdArrowBack/> Kembali ke Data Pasien
       </Link>
 

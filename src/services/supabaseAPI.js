@@ -87,6 +87,14 @@ export const pasienAPI = {
     return res.data[0]
   },
 
+  async findByUserId(user_id) {
+    const res = await axios.get(`${BASE_URL}/pasien`, {
+      headers,
+      params: { user_id: `eq.${user_id}`, select: '*' },
+    })
+    return res.data[0] || null
+  },
+
   async create(data) {
     const res = await axios.post(`${BASE_URL}/pasien`, data, { headers })
     return res.data[0]
@@ -117,6 +125,12 @@ export const jadwalAPI = {
     })
     return res.data
   },
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/jadwal`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*', order: 'tanggal.desc,jam.desc' },
+    })
+    return res.data
+  },
   async create(data) {
     const res = await axios.post(`${BASE_URL}/jadwal`, data, { headers })
     return res.data[0]
@@ -141,6 +155,12 @@ export const pembayaranAPI = {
     })
     return res.data
   },
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/pembayaran`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*', order: 'tanggal.desc' },
+    })
+    return res.data
+  },
   async create(data) {
     const res = await axios.post(`${BASE_URL}/pembayaran`, data, { headers })
     return res.data[0]
@@ -162,6 +182,12 @@ export const riwayatAPI = {
   async fetchAll() {
     const res = await axios.get(`${BASE_URL}/riwayat`, {
       headers, params: { select: '*', order: 'tanggal.desc' },
+    })
+    return res.data
+  },
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/riwayat`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*', order: 'tanggal.desc' },
     })
     return res.data
   },

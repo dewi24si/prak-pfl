@@ -5,14 +5,20 @@ import { useAuth } from '../context/useAuth'
 import Avatar from './Avatar'
 
 const routeTitles = {
-  '/dashboard':  'Dashboard',
-  '/pasien':     'Data Pasien',
-  '/jadwal':     'Jadwal & Reminder',
-  '/pembayaran': 'Pembayaran',
-  '/riwayat':    'Riwayat Perawatan',
-  '/loyalitas':  'Program Loyalitas',
-  '/laporan':    'Laporan',
-  '/components': 'Components',
+  '/admin/dashboard':  'Dashboard',
+  '/admin/pasien':     'Data Pasien',
+  '/admin/jadwal':     'Jadwal & Reminder',
+  '/admin/pembayaran': 'Pembayaran',
+  '/admin/riwayat':    'Riwayat Perawatan',
+  '/admin/loyalitas':  'Program Loyalitas',
+  '/admin/laporan':    'Laporan',
+  '/admin/components': 'Components',
+  '/admin/users':      'Users',
+  '/pasien/dashboard':  'Beranda',
+  '/pasien/booking':    'Booking Jadwal',
+  '/pasien/riwayat':    'Riwayat Perawatan',
+  '/pasien/pembayaran': 'Pembayaran',
+  '/pasien/profil':     'Profil Saya',
 }
 
 export default function Header() {
