@@ -19,6 +19,7 @@ const bayarStatusType = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
 const emptyForm      = { dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', catatan: '' }
 const formatRupiah   = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : 'Rp 0'
 const hariIni        = () => new Date().toISOString().split('T')[0]
+const jamSekarang    = () => new Date().toTimeString().slice(0, 5)
 
 export default function PasienBooking() {
   const { user } = useAuth()
@@ -52,6 +53,10 @@ export default function PasienBooking() {
     if (!form.tanggal || !form.jam) return
     if (form.tanggal < hariIni()) {
       setError('Tanggal booking tidak boleh di masa lalu.')
+      return
+    }
+    if (form.tanggal === hariIni() && form.jam <= jamSekarang()) {
+      setError('Jam booking untuk hari ini sudah lewat. Pilih jam lain atau tanggal berikutnya.')
       return
     }
     setSubmitting(true); setError('')

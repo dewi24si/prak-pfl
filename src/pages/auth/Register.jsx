@@ -60,7 +60,7 @@ export default function Register() {
       })
 
       setSuccess('Akun berhasil dibuat! Mengalihkan ke dashboard...')
-      login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap })
+      login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap }, true)
       setTimeout(() => navigate('/pasien/dashboard'), 1200)
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat registrasi')

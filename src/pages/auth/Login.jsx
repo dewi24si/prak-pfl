@@ -12,6 +12,7 @@ export default function Login() {
   const { login } = useAuth()
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
+  const [remember, setRemember] = useState(false)
   const [dataForm, setDataForm] = useState({ email: '', password: '' })
 
   const handleChange = e => setDataForm({ ...dataForm, [e.target.name]: e.target.value })
@@ -23,7 +24,7 @@ export default function Login() {
       const account = await usersAPI.login(dataForm.email, dataForm.password)
 
       if (account.role === 'admin') {
-        login(account)
+        login(account, remember)
         navigate('/admin/dashboard')
         return
       }
@@ -37,7 +38,7 @@ export default function Login() {
           user_id: account.id,
         })
       }
-      login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap })
+      login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap }, remember)
       navigate('/pasien/dashboard')
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat login')
@@ -70,7 +71,8 @@ export default function Login() {
           onChange={handleChange} placeholder="••••••••" required/>
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-sm text-teks-samping cursor-pointer">
-            <input type="checkbox" className="w-4 h-4 rounded accent-biru"/> Remember Me
+            <input type="checkbox" className="w-4 h-4 rounded accent-biru" checked={remember}
+              onChange={e => setRemember(e.target.checked)}/> Remember Me
           </label>
           <NavLink to="/forgot" className="text-sm font-semibold text-biru hover:underline">Forgot Password?</NavLink>
         </div>

@@ -1,4 +1,3 @@
-import { FaSearch } from 'react-icons/fa'
 import { MdNotifications, MdSettings, MdLogout } from 'react-icons/md'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
@@ -42,16 +41,6 @@ export default function Header() {
       {/* Left: title */}
       <div className="flex items-center gap-3">
         <h1 className="text-base font-bold text-teks">{pageTitle}</h1>
-      </div>
-
-      {/* Center: search */}
-      <div className="relative w-64 hidden md:block">
-        <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teks-samping text-xs" />
-        <input
-          type="text"
-          placeholder="Search here..."
-          className="w-full pl-9 pr-4 py-2 bg-latar rounded-full text-sm text-teks outline-none focus:ring-2 focus:ring-biru-muda transition placeholder:text-teks-samping"
-        />
       </div>
 
       {/* Right */}

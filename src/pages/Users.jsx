@@ -10,10 +10,12 @@ import Spinner from '../components/Spinner'
 import Avatar from '../components/Avatar'
 import { MdPersonAdd, MdEdit, MdDelete } from 'react-icons/md'
 import { usersAPI } from '../services/supabaseAPI'
+import { useAuth } from '../context/useAuth'
 
 const emptyForm = { email: '', password: '', role: 'user' }
 
 export default function Users() {
+  const { user: currentUser } = useAuth()
   const [data, setData]           = useState([])
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
@@ -60,7 +62,11 @@ export default function Users() {
     setError('')
     try {
       if (editId) {
-        const updateData = { email: form.email, role: form.role }
+        // Cegah admin gak sengaja menurunkan role akun sendiri yang sedang
+        // login - kalau kejadian, dia gak akan bisa reset sendiri (alur Lupa
+        // Password menolak reset mandiri untuk role admin) dan bisa kekunci total.
+        const role = editId === currentUser.id ? currentUser.role : form.role
+        const updateData = { email: form.email, role }
         if (form.password) updateData.password = form.password
         await usersAPI.update(editId, updateData)
         setSuccess('User berhasil diperbarui!')
@@ -83,6 +89,10 @@ export default function Users() {
   }
 
   const handleDelete = async (id, email) => {
+    if (id === currentUser.id) {
+      setError('Tidak bisa menghapus akun sendiri yang sedang login.')
+      return
+    }
     if (!confirm(`Yakin ingin menghapus user "${email}"?`)) return
     setLoading(true)
     try {
@@ -146,7 +156,9 @@ export default function Users() {
                       <MdEdit/>
                     </button>
                     <button onClick={() => handleDelete(u.id, u.email)}
-                      className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors">
+                      disabled={u.id === currentUser.id}
+                      title={u.id === currentUser.id ? 'Tidak bisa menghapus akun sendiri' : undefined}
+                      className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                       <MdDelete/>
                     </button>
                   </div>
@@ -180,7 +192,8 @@ export default function Users() {
             onChange={handleChange} placeholder="••••••••"
             hint="Minimal 8 karakter"/>
           <SelectField label="Role" name="role" value={form.role}
-            onChange={handleChange} options={['user', 'admin']} placeholder=""/>
+            onChange={handleChange} options={['user', 'admin']} placeholder=""
+            hint={editId === currentUser.id ? 'Role akun sendiri tidak bisa diubah lewat sini' : undefined}/>
         </form>
       </Modal>
     </div>
