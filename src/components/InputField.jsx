@@ -11,6 +11,8 @@ export default function InputField({
   hint,
   icon,
   disabled = false,
+  min,
+  max,
 }) {
   return (
     <div className="w-full">
@@ -35,6 +37,8 @@ export default function InputField({
           placeholder={placeholder}
           disabled={disabled}
           required={required}
+          min={min}
+          max={max}
           className={`
             w-full py-2.5 border rounded-xl text-sm text-teks outline-none transition
             placeholder:text-teks-samping disabled:opacity-50 disabled:cursor-not-allowed

@@ -87,6 +87,14 @@ export default function Pasien() {
         await pasienAPI.update(editId, form)
         setSuccess('Data pasien berhasil diperbarui!')
       } else {
+        if (form.email) {
+          const existing = await pasienAPI.findByEmail(form.email)
+          if (existing) {
+            setError(`Pasien dengan email ini sudah terdaftar atas nama "${existing.nama_lengkap}". Gunakan tombol Edit di data yang sudah ada, bukan menambah baru.`)
+            setLoading(false)
+            return
+          }
+        }
         await pasienAPI.create(form)
         setSuccess('Pasien baru berhasil ditambahkan!')
       }
