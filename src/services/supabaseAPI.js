@@ -131,6 +131,12 @@ export const jadwalAPI = {
     })
     return res.data
   },
+  async fetchByDokterTanggal(dokter, tanggal) {
+    const res = await axios.get(`${BASE_URL}/jadwal`, {
+      headers, params: { dokter: `eq.${dokter}`, tanggal: `eq.${tanggal}`, select: '*' },
+    })
+    return res.data
+  },
   async create(data) {
     const res = await axios.post(`${BASE_URL}/jadwal`, data, { headers })
     return res.data[0]
@@ -158,6 +164,12 @@ export const pembayaranAPI = {
   async fetchByPasien(pasien_id) {
     const res = await axios.get(`${BASE_URL}/pembayaran`, {
       headers, params: { pasien_id: `eq.${pasien_id}`, select: '*', order: 'tanggal.desc' },
+    })
+    return res.data
+  },
+  async fetchByJadwal(jadwal_id) {
+    const res = await axios.get(`${BASE_URL}/pembayaran`, {
+      headers, params: { jadwal_id: `eq.${jadwal_id}`, select: '*' },
     })
     return res.data
   },

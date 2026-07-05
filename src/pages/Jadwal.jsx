@@ -11,10 +11,10 @@ import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 import { jadwalAPI, pasienAPI, pembayaranAPI, riwayatAPI } from '../services/supabaseAPI'
 import { tindakanList, hargaTindakan } from '../data/tindakan'
+import { dokterList } from '../data/dokter'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const tabs         = ['All', 'Terjadwal', 'Selesai', 'Dibatalkan']
-const dokterList   = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
 const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', status: 'Terjadwal', catatan: '' }
 
 export default function Jadwal() {
@@ -64,6 +64,17 @@ export default function Jadwal() {
     if (!form.pasien_id || !form.tanggal || !form.jam) return
     setLoading(true); setError('')
     try {
+      // Cegah 1 dokter kebentur 2 jadwal di jam yang sama
+      if (form.status !== 'Dibatalkan') {
+        const jadwalDokter = await jadwalAPI.fetchByDokterTanggal(form.dokter, form.tanggal)
+        const bentrok = jadwalDokter.some(j => j.id !== editId && j.jam === form.jam && j.status !== 'Dibatalkan')
+        if (bentrok) {
+          setError(`${form.dokter} sudah ada jadwal lain jam ${form.jam} di tanggal tersebut. Silakan pilih jam lain.`)
+          setLoading(false)
+          return
+        }
+      }
+
       if (editId) {
         await jadwalAPI.update(editId, form)
         // Begitu jadwal ditandai Selesai, riwayat perawatannya otomatis
@@ -78,6 +89,13 @@ export default function Jadwal() {
             biaya: hargaTindakan[form.jenis_perawatan] || 0,
             catatan: form.catatan,
           })
+        }
+        // Jadwal yang dibatalkan otomatis membatalkan tagihan yang belum
+        // dibayar juga, supaya tidak nyangkut di laporan pembayaran.
+        if (form.status === 'Dibatalkan' && statusAwal !== 'Dibatalkan') {
+          const tagihan = await pembayaranAPI.fetchByJadwal(editId)
+          const belumLunas = tagihan.find(t => t.status === 'Belum Lunas')
+          if (belumLunas) await pembayaranAPI.delete(belumLunas.id)
         }
       } else {
         const jadwalBaru = await jadwalAPI.create(form)

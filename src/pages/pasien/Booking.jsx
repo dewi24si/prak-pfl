@@ -12,12 +12,13 @@ import { MdEventAvailable } from 'react-icons/md'
 import { pasienAPI, jadwalAPI, pembayaranAPI } from '../../services/supabaseAPI'
 import { useAuth } from '../../context/useAuth'
 import { tindakanList, hargaTindakan } from '../../data/tindakan'
+import { dokterList } from '../../data/dokter'
 
 const statusType     = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const bayarStatusType = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
-const dokterList     = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
 const emptyForm      = { dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', catatan: '' }
 const formatRupiah   = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : 'Rp 0'
+const hariIni        = () => new Date().toISOString().split('T')[0]
 
 export default function PasienBooking() {
   const { user } = useAuth()
@@ -49,8 +50,19 @@ export default function PasienBooking() {
   const handleSubmit = async e => {
     e.preventDefault()
     if (!form.tanggal || !form.jam) return
+    if (form.tanggal < hariIni()) {
+      setError('Tanggal booking tidak boleh di masa lalu.')
+      return
+    }
     setSubmitting(true); setError('')
     try {
+      const jadwalDokter = await jadwalAPI.fetchByDokterTanggal(form.dokter, form.tanggal)
+      const bentrok = jadwalDokter.some(j => j.jam === form.jam && j.status !== 'Dibatalkan')
+      if (bentrok) {
+        setError(`${form.dokter} sudah ada jadwal lain jam ${form.jam} di tanggal tersebut. Silakan pilih jam lain.`)
+        return
+      }
+
       const pasien = await pasienAPI.fetchById(user.pasienId)
       const jadwalBaru = await jadwalAPI.create({
         pasien_id: user.pasienId,
@@ -91,6 +103,10 @@ export default function PasienBooking() {
     if (!confirm('Yakin ingin membatalkan jadwal ini?')) return
     try {
       await jadwalAPI.update(id, { status: 'Dibatalkan' })
+      // Tagihan yang belum dibayar untuk jadwal ini ikut dibatalkan,
+      // supaya tidak nyangkut sebagai "Belum Lunas" padahal kunjungannya batal.
+      const tagihan = pembayaran.find(b => b.jadwal_id === id && b.status === 'Belum Lunas')
+      if (tagihan) await pembayaranAPI.delete(tagihan.id)
       loadData()
     } catch (err) {
       setError('Gagal membatalkan jadwal: ' + err.message)
@@ -108,7 +124,7 @@ export default function PasienBooking() {
         <h3 className="font-bold text-teks mb-4">Buat Booking Baru</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
+            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} min={hariIni()} required/>
             <InputField label="Jam" name="jam" type="time" value={form.jam} onChange={handleChange} required/>
           </div>
           <div className="grid grid-cols-2 gap-4">
