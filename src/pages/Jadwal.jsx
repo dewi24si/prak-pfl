@@ -10,7 +10,7 @@ import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 import { jadwalAPI, pasienAPI, pembayaranAPI, riwayatAPI } from '../services/supabaseAPI'
-import { tindakanList, hargaTindakan } from '../data/tindakan'
+import { tindakanList, hargaTindakan, POIN_PER_KUNJUNGAN } from '../data/tindakan'
 import { dokterList } from '../data/dokter'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
@@ -88,6 +88,12 @@ export default function Jadwal() {
             tanggal: form.tanggal,
             biaya: hargaTindakan[form.jenis_perawatan] || 0,
             catatan: form.catatan,
+          })
+          // Setiap kunjungan yang selesai juga otomatis menambah poin
+          // loyalitas pasien, tanpa admin perlu edit manual poinnya.
+          const pasien = pasienList.find(p => String(p.id) === String(form.pasien_id))
+          await pasienAPI.update(form.pasien_id, {
+            poin_loyalitas: (pasien?.poin_loyalitas || 0) + POIN_PER_KUNJUNGAN,
           })
         }
         // Jadwal yang dibatalkan otomatis membatalkan tagihan yang belum
@@ -213,7 +219,7 @@ export default function Jadwal() {
               hint={!editId ? `Tagihan otomatis: Rp ${(hargaTindakan[form.jenis_perawatan] || 0).toLocaleString('id-ID')}` : undefined}/>
           </div>
           <SelectField label="Status" name="status" value={form.status} onChange={handleChange} options={['Terjadwal','Selesai','Dibatalkan']} placeholder=""
-            hint={editId && form.status === 'Selesai' && statusAwal !== 'Selesai' ? 'Riwayat perawatan akan otomatis tercatat' : undefined}/>
+            hint={editId && form.status === 'Selesai' && statusAwal !== 'Selesai' ? `Riwayat perawatan akan otomatis tercatat, +${POIN_PER_KUNJUNGAN} poin loyalitas` : undefined}/>
           <InputField label="Catatan" name="catatan" value={form.catatan} onChange={handleChange} placeholder="Catatan tambahan (opsional)"/>
         </form>
       </Modal>

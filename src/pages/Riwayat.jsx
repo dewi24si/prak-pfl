@@ -10,10 +10,10 @@ import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 import { riwayatAPI, pasienAPI } from '../services/supabaseAPI'
+import { tindakanList, hargaTindakan, POIN_PER_KUNJUNGAN } from '../data/tindakan'
+import { dokterList } from '../data/dokter'
 
 const tindakanType = { 'Scaling':'primary','Tambal Gigi':'success','Konsultasi':'purple','Cabut Gigi':'danger','Pemasangan Behel':'warning','Veneer':'pink','Bleaching':'primary','Implan':'success' }
-const tindakanList = ['Scaling','Tambal Gigi','Cabut Gigi','Konsultasi','Pemasangan Behel','Veneer','Bleaching','Implan']
-const dokterList   = ['drg. Sari','drg. Budi','drg. Rina','drg. Hendra']
 const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tindakan: 'Scaling', tanggal: '', biaya: '', catatan: '' }
 
 const formatRupiah = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : '-'
@@ -44,6 +44,12 @@ export default function Riwayat() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
+  const handleTindakanChange = e => {
+    const tindakan = e.target.value
+    // Isi otomatis biaya sesuai harga acuan, tapi tetap bisa diubah manual.
+    setForm({ ...form, tindakan, biaya: hargaTindakan[tindakan] || 0 })
+  }
+
   const handlePasienChange = e => {
     const id = e.target.value
     const pasien = pasienList.find(p => String(p.id) === String(id))
@@ -63,7 +69,17 @@ export default function Riwayat() {
     setLoading(true); setError('')
     try {
       const payload = { ...form, biaya: Number(form.biaya) || 0 }
-      editId ? await riwayatAPI.update(editId, payload) : await riwayatAPI.create(payload)
+      if (editId) {
+        await riwayatAPI.update(editId, payload)
+      } else {
+        await riwayatAPI.create(payload)
+        // Tindakan baru yang dicatat manual (misal input riwayat lama)
+        // juga otomatis menambah poin loyalitas pasien.
+        const pasien = pasienList.find(p => String(p.id) === String(form.pasien_id))
+        await pasienAPI.update(form.pasien_id, {
+          poin_loyalitas: (pasien?.poin_loyalitas || 0) + POIN_PER_KUNJUNGAN,
+        })
+      }
       setSuccess(editId ? 'Riwayat berhasil diperbarui!' : 'Riwayat berhasil ditambahkan!')
       setShowModal(false); setForm(emptyForm); setEditId(null)
       loadData(); setTimeout(() => setSuccess(''), 3000)
@@ -135,11 +151,12 @@ export default function Riwayat() {
             options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
             <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
-            <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleChange} options={tindakanList} placeholder=""/>
+            <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleTindakanChange} options={tindakanList} placeholder=""/>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
-            <InputField label="Biaya (Rp)" name="biaya" type="number" value={form.biaya} onChange={handleChange} placeholder="250000"/>
+            <InputField label="Biaya (Rp)" name="biaya" type="number" value={form.biaya} onChange={handleChange} placeholder="250000"
+              hint={!editId ? `Otomatis +${POIN_PER_KUNJUNGAN} poin loyalitas` : undefined}/>
           </div>
           <InputField label="Catatan Dokter" name="catatan" value={form.catatan} onChange={handleChange} placeholder="Catatan hasil perawatan"/>
         </form>

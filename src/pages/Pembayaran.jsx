@@ -10,7 +10,7 @@ import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdReceiptLong, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 import { pembayaranAPI, pasienAPI } from '../services/supabaseAPI'
-import { tindakanList } from '../data/tindakan'
+import { tindakanList, hargaTindakan } from '../data/tindakan'
 
 const statusType   = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
 const tabs         = ['All', 'Lunas', 'Belum Lunas']
@@ -45,6 +45,13 @@ export default function Pembayaran() {
   }
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
+
+  const handleTindakanChange = e => {
+    const jenis_perawatan = e.target.value
+    // Isi otomatis biaya sesuai harga acuan, tapi tetap bisa diubah manual
+    // (misal ada diskon atau biaya tambahan) lewat field Biaya di bawahnya.
+    setForm({ ...form, jenis_perawatan, biaya: hargaTindakan[jenis_perawatan] || 0 })
+  }
 
   const handlePasienChange = e => {
     const id = e.target.value
@@ -161,11 +168,12 @@ export default function Pembayaran() {
           <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
             options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
-            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""/>
+            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleTindakanChange} options={tindakanList} placeholder=""/>
             <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Biaya (Rp)" name="biaya" type="number" value={form.biaya} onChange={handleChange} placeholder="250000"/>
+            <InputField label="Biaya (Rp)" name="biaya" type="number" value={form.biaya} onChange={handleChange} placeholder="250000"
+              hint="Terisi otomatis sesuai harga acuan, bisa diubah manual"/>
             <SelectField label="Metode Bayar" name="metode_bayar" value={form.metode_bayar} onChange={handleChange} options={metodeBayar} placeholder=""/>
           </div>
           <SelectField label="Status" name="status" value={form.status} onChange={handleChange} options={['Lunas','Belum Lunas']} placeholder=""/>
