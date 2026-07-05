@@ -10,28 +10,45 @@ const headers = {
   Prefer: 'return=representation',
 }
 
+// Kolom password tidak pernah dikirim ke/dari client dalam bentuk asli:
+// di-hash dulu di browser, dan baris users selalu diminta kembali tanpa
+// kolom password (lihat safeSelect di bawah). Verifikasi login dilakukan
+// lewat RPC login_user() di database, bukan query tabel langsung, supaya
+// anon key tidak butuh (dan memang tidak diberi) akses baca ke kolom itu.
+const safeSelect = 'id,email,role,created_at'
+
+async function hashPassword(plain) {
+  const bytes = new TextEncoder().encode(plain)
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 // ─── USERS ────────────────────────────────────────────────────────────────────
 
 export const usersAPI = {
   async fetchAll() {
     const res = await axios.get(`${BASE_URL}/users`, {
       headers,
-      params: { select: '*', order: 'id.desc' },
+      params: { select: safeSelect, order: 'id.desc' },
     })
     return res.data
   },
 
   async login(email, password) {
-    const res = await axios.get(`${BASE_URL}/users`, {
-      headers,
-      params: { email: `eq.${email}`, password: `eq.${password}`, select: '*' },
-    })
+    const passwordHash = await hashPassword(password)
+    const res = await axios.post(`${BASE_URL}/rpc/login_user`,
+      { p_email: email, p_password_hash: passwordHash },
+      { headers },
+    )
     if (res.data.length === 0) throw new Error('Email atau password salah')
     return res.data[0]
   },
 
   async register(data) {
-    const res = await axios.post(`${BASE_URL}/users`, data, { headers })
+    const payload = { ...data, password: await hashPassword(data.password) }
+    const res = await axios.post(`${BASE_URL}/users`, payload, {
+      headers, params: { select: safeSelect },
+    })
     return res.data[0]
   },
 
@@ -46,15 +63,15 @@ export const usersAPI = {
   async findByEmail(email) {
     const res = await axios.get(`${BASE_URL}/users`, {
       headers,
-      params: { email: `eq.${email}`, select: 'id,email' },
+      params: { email: `eq.${email}`, select: safeSelect },
     })
     return res.data[0] || null
   },
 
   async update(id, data) {
-    const res = await axios.patch(`${BASE_URL}/users`, data, {
-      headers,
-      params: { id: `eq.${id}` },
+    const payload = data.password ? { ...data, password: await hashPassword(data.password) } : data
+    const res = await axios.patch(`${BASE_URL}/users`, payload, {
+      headers, params: { id: `eq.${id}`, select: safeSelect },
     })
     return res.data[0]
   },

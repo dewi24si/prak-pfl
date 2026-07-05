@@ -5,18 +5,21 @@ import InputField from '../../components/InputField'
 import Button from '../../components/Button'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
-import { usersAPI } from '../../services/supabaseAPI'
+import { usersAPI, pasienAPI } from '../../services/supabaseAPI'
 
 export default function Forgot() {
   const navigate = useNavigate()
-  const [step, setStep]         = useState(1) // 1 = cari email, 2 = set password baru
+  const [step, setStep]         = useState(1) // 1 = verifikasi identitas, 2 = set password baru
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
   const [success, setSuccess]   = useState('')
   const [email, setEmail]       = useState('')
+  const [noHp, setNoHp]         = useState('')
   const [user, setUser]         = useState(null)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  const normalisasiHp = s => (s || '').replace(/\D/g, '')
 
   const handleFindEmail = async e => {
     e.preventDefault()
@@ -25,6 +28,15 @@ export default function Forgot() {
       const found = await usersAPI.findByEmail(email)
       if (!found) {
         setError('Email tidak terdaftar. Periksa kembali atau daftar akun baru.')
+        return
+      }
+      if (found.role === 'admin') {
+        setError('Reset password akun admin tidak bisa dilakukan mandiri. Hubungi admin/developer klinik untuk mengubahnya langsung.')
+        return
+      }
+      const pasien = await pasienAPI.findByUserId(found.id)
+      if (!pasien?.no_hp || normalisasiHp(pasien.no_hp) !== normalisasiHp(noHp)) {
+        setError('No. HP tidak cocok dengan data akun ini.')
         return
       }
       setUser(found)
@@ -64,7 +76,7 @@ export default function Forgot() {
       <h2 className="text-3xl font-poppins font-bold text-teks mb-2">Forgot Password?</h2>
       <p className="text-sm text-teks-samping mb-8">
         {step === 1
-          ? 'Masukkan email akun kamu untuk mulai reset password.'
+          ? 'Masukkan email dan No. HP yang terdaftar untuk verifikasi akun kamu.'
           : `Buat password baru untuk ${user?.email}.`}
       </p>
 
@@ -89,6 +101,8 @@ export default function Forgot() {
         <form onSubmit={handleFindEmail} className="space-y-5">
           <InputField label="Email" name="email" type="email" value={email}
             onChange={e => setEmail(e.target.value)} placeholder="nama@klinik.com" required/>
+          <InputField label="No. HP / WhatsApp Terdaftar" name="noHp" value={noHp}
+            onChange={e => setNoHp(e.target.value)} placeholder="08xx-xxxx-xxxx" required/>
           <Button type="primary" fullWidth size="lg" disabled={loading}>Cari Akun</Button>
         </form>
       ) : (
