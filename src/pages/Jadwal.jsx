@@ -9,7 +9,7 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { jadwalAPI, pasienAPI, pembayaranAPI } from '../services/supabaseAPI'
+import { jadwalAPI, pasienAPI, pembayaranAPI, riwayatAPI } from '../services/supabaseAPI'
 import { tindakanList, hargaTindakan } from '../data/tindakan'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
@@ -24,6 +24,7 @@ export default function Jadwal() {
   const [success, setSuccess]     = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId]       = useState(null)
+  const [statusAwal, setStatusAwal] = useState(null)
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
@@ -50,9 +51,10 @@ export default function Jadwal() {
     setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
   }
 
-  const handleOpenAdd = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
+  const handleOpenAdd = () => { setEditId(null); setStatusAwal(null); setForm(emptyForm); setShowModal(true) }
   const handleOpenEdit = j => {
     setEditId(j.id)
+    setStatusAwal(j.status)
     setForm({ pasien_id: j.pasien_id || '', nama_pasien: j.nama_pasien, dokter: j.dokter, tanggal: j.tanggal, jam: j.jam, jenis_perawatan: j.jenis_perawatan, status: j.status, catatan: j.catatan || '' })
     setShowModal(true)
   }
@@ -64,6 +66,19 @@ export default function Jadwal() {
     try {
       if (editId) {
         await jadwalAPI.update(editId, form)
+        // Begitu jadwal ditandai Selesai, riwayat perawatannya otomatis
+        // tercatat juga, tanpa perlu diinput ulang manual di halaman lain.
+        if (form.status === 'Selesai' && statusAwal !== 'Selesai') {
+          await riwayatAPI.create({
+            pasien_id: form.pasien_id,
+            nama_pasien: form.nama_pasien,
+            dokter: form.dokter,
+            tindakan: form.jenis_perawatan,
+            tanggal: form.tanggal,
+            biaya: hargaTindakan[form.jenis_perawatan] || 0,
+            catatan: form.catatan,
+          })
+        }
       } else {
         const jadwalBaru = await jadwalAPI.create(form)
         // Setiap jadwal baru otomatis membuat tagihan pembayarannya sendiri,
@@ -80,7 +95,7 @@ export default function Jadwal() {
         })
       }
       setSuccess(editId ? 'Jadwal berhasil diperbarui!' : 'Jadwal & tagihan pembayaran berhasil dibuat!')
-      setShowModal(false); setForm(emptyForm); setEditId(null)
+      setShowModal(false); setForm(emptyForm); setEditId(null); setStatusAwal(null)
       loadData(); setTimeout(() => setSuccess(''), 3000)
     } catch (err) { setError('Gagal menyimpan: ' + err.message) }
     finally { setLoading(false) }
@@ -164,9 +179,9 @@ export default function Jadwal() {
         </div>
       </div>
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null); setStatusAwal(null) }}
         title={editId ? 'Edit Jadwal' : 'Tambah Jadwal'}
-        footer={<div className="flex gap-3"><Button type="outline" fullWidth onClick={() => { setShowModal(false); setEditId(null) }}>Batal</Button><Button type="primary" fullWidth onClick={handleSubmit} disabled={loading}>{loading ? 'Menyimpan...' : 'Simpan'}</Button></div>}>
+        footer={<div className="flex gap-3"><Button type="outline" fullWidth onClick={() => { setShowModal(false); setEditId(null); setStatusAwal(null) }}>Batal</Button><Button type="primary" fullWidth onClick={handleSubmit} disabled={loading}>{loading ? 'Menyimpan...' : 'Simpan'}</Button></div>}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
             options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
@@ -179,7 +194,8 @@ export default function Jadwal() {
             <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""
               hint={!editId ? `Tagihan otomatis: Rp ${(hargaTindakan[form.jenis_perawatan] || 0).toLocaleString('id-ID')}` : undefined}/>
           </div>
-          <SelectField label="Status" name="status" value={form.status} onChange={handleChange} options={['Terjadwal','Selesai','Dibatalkan']} placeholder=""/>
+          <SelectField label="Status" name="status" value={form.status} onChange={handleChange} options={['Terjadwal','Selesai','Dibatalkan']} placeholder=""
+            hint={editId && form.status === 'Selesai' && statusAwal !== 'Selesai' ? 'Riwayat perawatan akan otomatis tercatat' : undefined}/>
           <InputField label="Catatan" name="catatan" value={form.catatan} onChange={handleChange} placeholder="Catatan tambahan (opsional)"/>
         </form>
       </Modal>

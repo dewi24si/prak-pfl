@@ -101,7 +101,7 @@ export default function Users() {
     <div>
       <PageHeader title="Users" breadcrumb={['Beranda', 'Users']}>
         <Button type="primary" icon={<MdPersonAdd/>} onClick={handleOpenAdd}>
-          Add New User
+          Tambah User Baru
         </Button>
       </PageHeader>
 
@@ -163,7 +163,7 @@ export default function Users() {
 
       {/* Modal Tambah/Edit */}
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
-        title={editId ? 'Edit User' : 'Add New User'}
+        title={editId ? 'Edit User' : 'Tambah User Baru'}
         footer={
           <div className="flex gap-3">
             <Button type="outline" fullWidth onClick={() => { setShowModal(false); setEditId(null) }}>Batal</Button>
