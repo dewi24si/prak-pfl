@@ -49,15 +49,25 @@ export default function Register() {
         role: 'user',
       })
 
-      // Setiap akun baru otomatis punya profil pasien miliknya sendiri,
-      // supaya bisa langsung booking jadwal setelah login.
-      const pasien = await pasienAPI.create({
-        nama_lengkap: dataForm.nama_lengkap,
-        jenis_kelamin: dataForm.jenis_kelamin,
-        no_hp: dataForm.no_hp,
-        email: dataForm.email,
-        user_id: account.id,
-      })
+      // Kalau pasien ini sudah pernah dicatat manual oleh admin (misal
+      // walk-in) tapi belum punya akun login, sambungkan ke profil lamanya
+      // supaya riwayat & poin loyalitas yang sudah ada gak hilang/kegantiin
+      // profil kosong yang baru.
+      const pasienLama = await pasienAPI.findByEmail(dataForm.email)
+      const pasien = pasienLama && !pasienLama.user_id
+        ? await pasienAPI.update(pasienLama.id, {
+            user_id: account.id,
+            nama_lengkap: dataForm.nama_lengkap,
+            jenis_kelamin: dataForm.jenis_kelamin,
+            no_hp: dataForm.no_hp,
+          })
+        : await pasienAPI.create({
+            nama_lengkap: dataForm.nama_lengkap,
+            jenis_kelamin: dataForm.jenis_kelamin,
+            no_hp: dataForm.no_hp,
+            email: dataForm.email,
+            user_id: account.id,
+          })
 
       setSuccess('Akun berhasil dibuat! Mengalihkan ke dashboard...')
       login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap }, true)

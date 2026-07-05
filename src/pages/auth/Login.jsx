@@ -32,11 +32,16 @@ export default function Login() {
       // Pasien: pastikan profil pasien miliknya sudah ada (akun lama belum tentu punya)
       let pasien = await pasienAPI.findByUserId(account.id)
       if (!pasien) {
-        pasien = await pasienAPI.create({
-          nama_lengkap: account.email.split('@')[0],
-          email: account.email,
-          user_id: account.id,
-        })
+        // Cek dulu apakah sudah ada profil pasien walk-in dengan email yang
+        // sama tapi belum disambungkan ke akun manapun, sebelum bikin baru.
+        const pasienLama = await pasienAPI.findByEmail(account.email)
+        pasien = pasienLama && !pasienLama.user_id
+          ? await pasienAPI.update(pasienLama.id, { user_id: account.id })
+          : await pasienAPI.create({
+              nama_lengkap: account.email.split('@')[0],
+              email: account.email,
+              user_id: account.id,
+            })
       }
       login({ ...account, pasienId: pasien.id, namaLengkap: pasien.nama_lengkap }, remember)
       navigate('/pasien/dashboard')

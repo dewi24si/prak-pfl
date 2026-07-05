@@ -112,6 +112,14 @@ export const pasienAPI = {
     return res.data[0] || null
   },
 
+  async findByEmail(email) {
+    const res = await axios.get(`${BASE_URL}/pasien`, {
+      headers,
+      params: { email: `eq.${email}`, select: '*' },
+    })
+    return res.data[0] || null
+  },
+
   async create(data) {
     const res = await axios.post(`${BASE_URL}/pasien`, data, { headers })
     return res.data[0]
