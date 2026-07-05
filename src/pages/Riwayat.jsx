@@ -9,12 +9,13 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { riwayatAPI, pasienAPI } from '../services/supabaseAPI'
-import { tindakanList, hargaTindakan, POIN_PER_KUNJUNGAN } from '../data/tindakan'
-import { dokterList } from '../data/dokter'
+import { riwayatAPI, pasienAPI, dokterAPI, tindakanAPI } from '../services/supabaseAPI'
+import { POIN_PER_KUNJUNGAN } from '../data/tindakan'
+import Pagination from '../components/Pagination'
 
 const tindakanType = { 'Scaling':'primary','Tambal Gigi':'success','Konsultasi':'purple','Cabut Gigi':'danger','Pemasangan Behel':'warning','Veneer':'pink','Bleaching':'primary','Implan':'success' }
-const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tindakan: 'Scaling', tanggal: '', biaya: '', catatan: '' }
+const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: '', tindakan: '', tanggal: '', biaya: '', catatan: '' }
+const PAGE_SIZE    = 10
 
 const formatRupiah = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : '-'
 
@@ -27,13 +28,27 @@ export default function Riwayat() {
   const [editId, setEditId]       = useState(null)
   const [form, setForm]           = useState(emptyForm)
   const [search, setSearch]       = useState('')
+  const [page, setPage]           = useState(1)
   const [pasienList, setPasienList] = useState([])
+  const [dokterList, setDokterList]     = useState([])
+  const [tindakanList, setTindakanList] = useState([])
 
-  useEffect(() => { loadData(); loadPasien() }, [])
+  const hargaTindakan = Object.fromEntries(tindakanList.map(t => [t.nama, t.harga]))
+
+  useEffect(() => { loadData(); loadPasien(); loadMasterData() }, [])
+  useEffect(() => { setPage(1) }, [search])
 
   const loadPasien = async () => {
     try { setPasienList(await pasienAPI.fetchAll()) }
     catch { /* dropdown pasien gagal dimuat, biarkan kosong */ }
+  }
+
+  const loadMasterData = async () => {
+    try {
+      const [d, t] = await Promise.all([dokterAPI.fetchAll(), tindakanAPI.fetchAll()])
+      setDokterList(d.filter(x => x.aktif))
+      setTindakanList(t.filter(x => x.aktif))
+    } catch { /* dropdown gagal dimuat, biarkan kosong */ }
   }
 
   const loadData = async () => {
@@ -56,7 +71,11 @@ export default function Riwayat() {
     setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
   }
 
-  const handleOpenAdd  = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
+  const handleOpenAdd  = () => {
+    setEditId(null)
+    setForm({ ...emptyForm, dokter: dokterList[0]?.nama || '', tindakan: tindakanList[0]?.nama || '' })
+    setShowModal(true)
+  }
   const handleOpenEdit = r => {
     setEditId(r.id)
     setForm({ pasien_id: r.pasien_id || '', nama_pasien: r.nama_pasien, dokter: r.dokter, tindakan: r.tindakan, tanggal: r.tanggal, biaya: r.biaya || '', catatan: r.catatan || '' })
@@ -96,6 +115,8 @@ export default function Riwayat() {
   }
 
   const filtered = data.filter(r => r.nama_pasien?.toLowerCase().includes(search.toLowerCase()))
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div>
@@ -120,7 +141,7 @@ export default function Riwayat() {
         {!loading && filtered.length === 0 && <div className="text-center py-12 text-teks-samping text-sm">Belum ada riwayat perawatan.</div>}
         {!loading && filtered.length > 0 && (
           <Table headers={['Pasien','Dokter','Tindakan','Tanggal','Biaya','Catatan','Aksi']}>
-            {filtered.map(r => (
+            {paged.map(r => (
               <tr key={r.id} className="hover:bg-latar transition-colors">
                 <td className="px-3 py-3.5 font-semibold text-teks">{r.nama_pasien}</td>
                 <td className="px-3 py-3.5 text-sm text-teks-samping">{r.dokter}</td>
@@ -139,8 +160,9 @@ export default function Riwayat() {
           </Table>
         )}
         <div className="px-5 py-4 border-t border-garis">
-          <p className="text-xs text-teks-samping">Showing {filtered.length} of {data.length} entries</p>
+          <p className="text-xs text-teks-samping">Showing {paged.length} of {filtered.length} entries</p>
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage}/>
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
@@ -150,8 +172,10 @@ export default function Riwayat() {
           <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
             options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
-            <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
-            <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleTindakanChange} options={tindakanList} placeholder=""/>
+            <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange}
+              options={dokterList.map(d => d.nama)} placeholder=""/>
+            <SelectField label="Tindakan" name="tindakan" value={form.tindakan} onChange={handleTindakanChange}
+              options={tindakanList.map(t => t.nama)} placeholder=""/>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>

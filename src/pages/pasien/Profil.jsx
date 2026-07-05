@@ -15,6 +15,10 @@ import { useAuth } from '../../context/useAuth'
 const tierType = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
 const getTier  = p => p >= 100 ? 'Gold' : p >= 50 ? 'Silver' : 'Bronze'
 
+// 1 poin = Rp 1.000 diskon, minimal tukar 20 poin sekali tukar.
+const RUPIAH_PER_POIN = 1000
+const MIN_TUKAR_POIN  = 20
+
 export default function PasienProfil() {
   const { user } = useAuth()
   const [pasien, setPasien]   = useState(null)
@@ -23,6 +27,8 @@ export default function PasienProfil() {
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState('')
   const [success, setSuccess] = useState('')
+  const [jumlahTukar, setJumlahTukar] = useState('')
+  const [redeeming, setRedeeming]     = useState(false)
 
   useEffect(() => {
     pasienAPI.fetchById(user.pasienId)
@@ -51,6 +57,33 @@ export default function PasienProfil() {
       setError('Gagal menyimpan: ' + err.message)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleRedeem = async () => {
+    const jumlah = Number(jumlahTukar)
+    const poinSekarang = pasien?.poin_loyalitas || 0
+    if (!jumlah || jumlah < MIN_TUKAR_POIN) {
+      setError(`Minimal tukar ${MIN_TUKAR_POIN} poin.`)
+      return
+    }
+    if (jumlah > poinSekarang) {
+      setError('Poin tidak cukup.')
+      return
+    }
+    const nilaiDiskon = jumlah * RUPIAH_PER_POIN
+    if (!confirm(`Tukar ${jumlah} poin dengan diskon Rp ${nilaiDiskon.toLocaleString('id-ID')}?`)) return
+    setRedeeming(true); setError('')
+    try {
+      const updated = await pasienAPI.update(user.pasienId, { poin_loyalitas: poinSekarang - jumlah })
+      setPasien(updated); setForm(f => ({ ...f, poin_loyalitas: updated.poin_loyalitas }))
+      setJumlahTukar('')
+      setSuccess(`Berhasil! Diskon Rp ${nilaiDiskon.toLocaleString('id-ID')} bisa ditunjukkan ke admin klinik saat pembayaran berikutnya.`)
+      setTimeout(() => setSuccess(''), 6000)
+    } catch (err) {
+      setError('Gagal menukar poin: ' + err.message)
+    } finally {
+      setRedeeming(false)
     }
   }
 
@@ -93,6 +126,19 @@ export default function PasienProfil() {
               Dokter Penanggung Jawab: <span className="font-semibold text-teks">{pasien.dokter_penanggung_jawab}</span>
             </div>
           )}
+        </div>
+      </Card>
+
+      <Card className="mb-6">
+        <h3 className="font-bold text-teks mb-1">Tukar Poin Loyalitas</h3>
+        <p className="text-xs text-teks-samping mb-4">1 poin = Rp {RUPIAH_PER_POIN.toLocaleString('id-ID')} diskon, minimal tukar {MIN_TUKAR_POIN} poin.</p>
+        <div className="flex items-end gap-3">
+          <InputField label="Jumlah Poin" name="jumlahTukar" type="number" value={jumlahTukar}
+            onChange={e => setJumlahTukar(e.target.value)} placeholder={String(MIN_TUKAR_POIN)}
+            hint={jumlahTukar ? `Diskon: Rp ${(Number(jumlahTukar) * RUPIAH_PER_POIN || 0).toLocaleString('id-ID')}` : `Poin kamu: ${pasien?.poin_loyalitas || 0}`}/>
+          <Button type="primary" onClick={handleRedeem} disabled={redeeming || !(pasien?.poin_loyalitas > 0)}>
+            {redeeming ? 'Menukar...' : 'Tukar Sekarang'}
+          </Button>
         </div>
       </Card>
 

@@ -11,23 +11,25 @@ import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdPersonAdd, MdEdit, MdDelete, MdSearch, MdVisibility } from 'react-icons/md'
 import { Link } from 'react-router-dom'
-import { pasienAPI } from '../services/supabaseAPI'
+import { pasienAPI, dokterAPI } from '../services/supabaseAPI'
+import Pagination from '../components/Pagination'
 
 const statusOptions = ['Aktif', 'Tidak Aktif']
 const loyalitasMap  = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
-const dokterOptions = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
 const tiers         = ['All', 'Bronze', 'Silver', 'Gold']
+const PAGE_SIZE      = 10
 
 const emptyForm = {
   nama_lengkap: '', jenis_kelamin: 'Laki-laki', tanggal_lahir: '',
   no_hp: '', email: '', alamat: '', status_pasien: 'Aktif',
   keluhan_utama: '', riwayat_perawatan: '', jadwal_kontrol: '',
-  dokter_penanggung_jawab: 'drg. Sari', poin_loyalitas: 0,
+  dokter_penanggung_jawab: '', poin_loyalitas: 0,
   catatan_dokter: '',
 }
 
 export default function Pasien() {
   const [data, setData]           = useState([])
+  const [dokterList, setDokterList] = useState([])
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
   const [success, setSuccess]     = useState('')
@@ -36,10 +38,12 @@ export default function Pasien() {
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
+  const [page, setPage]           = useState(1)
   const searchRef = useRef(null)
 
   useEffect(() => { searchRef.current?.focus() }, [])
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData(); loadDokter() }, [])
+  useEffect(() => { setPage(1) }, [activeTab, search])
 
   const loadData = async () => {
     try {
@@ -54,9 +58,18 @@ export default function Pasien() {
     }
   }
 
+  const loadDokter = async () => {
+    try { setDokterList((await dokterAPI.fetchAll()).filter(d => d.aktif)) }
+    catch { /* dropdown gagal dimuat, biarkan kosong */ }
+  }
+
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const handleOpenAdd = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
+  const handleOpenAdd = () => {
+    setEditId(null)
+    setForm({ ...emptyForm, dokter_penanggung_jawab: dokterList[0]?.nama || '' })
+    setShowModal(true)
+  }
 
   const handleOpenEdit = (pasien) => {
     setEditId(pasien.id)
@@ -71,7 +84,7 @@ export default function Pasien() {
       keluhan_utama: pasien.keluhan_utama || '',
       riwayat_perawatan: pasien.riwayat_perawatan || '',
       jadwal_kontrol: pasien.jadwal_kontrol || '',
-      dokter_penanggung_jawab: pasien.dokter_penanggung_jawab || 'drg. Sari',
+      dokter_penanggung_jawab: pasien.dokter_penanggung_jawab || dokterList[0]?.nama || '',
       poin_loyalitas: pasien.poin_loyalitas || 0,
       catatan_dokter: pasien.catatan_dokter || '',
     })
@@ -135,6 +148,8 @@ export default function Pasien() {
        p.email?.toLowerCase().includes(search.toLowerCase()))
     )
   })
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div>
@@ -178,7 +193,7 @@ export default function Pasien() {
 
         {!loading && filtered.length > 0 && (
           <Table headers={['Avatar', 'Nama Lengkap', 'Email', 'No. HP', 'Dokter', 'Tier', 'Status', 'Aksi']}>
-            {filtered.map(p => {
+            {paged.map(p => {
               const tier = getTier(p.poin_loyalitas)
               return (
                 <tr key={p.id} className="hover:bg-latar transition-colors">
@@ -219,8 +234,9 @@ export default function Pasien() {
         )}
 
         <div className="flex items-center justify-between px-5 py-4 border-t border-garis">
-          <p className="text-xs text-teks-samping">Showing {filtered.length} of {data.length} entries</p>
+          <p className="text-xs text-teks-samping">Showing {paged.length} of {filtered.length} entries</p>
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage}/>
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
@@ -263,7 +279,7 @@ export default function Pasien() {
               onChange={handleChange} placeholder="Keluhan awal pasien"/>
             <SelectField label="Dokter Penanggung Jawab" name="dokter_penanggung_jawab"
               value={form.dokter_penanggung_jawab} onChange={handleChange}
-              options={dokterOptions} placeholder=""/>
+              options={dokterList.map(d => d.nama)} placeholder=""/>
           </div>
 
           {/* Field berikut hanya relevan setelah pasien pernah ditangani, jadi baru muncul saat edit */}

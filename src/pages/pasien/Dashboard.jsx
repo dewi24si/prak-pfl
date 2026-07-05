@@ -15,6 +15,13 @@ import { useAuth } from '../../context/useAuth'
 const tierType   = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
 const statusType = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const getTier    = p => p >= 100 ? 'Gold' : p >= 50 ? 'Silver' : 'Bronze'
+const reminderLabel = tanggal => {
+  const hariIni = new Date().toISOString().split('T')[0]
+  const besok = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  if (tanggal === hariIni) return 'Hari ini'
+  if (tanggal === besok) return 'Besok'
+  return null
+}
 
 export default function PasienDashboard() {
   const { user } = useAuth()
@@ -93,18 +100,22 @@ export default function PasienDashboard() {
             <div className="text-center py-10 text-teks-samping text-sm">Belum ada jadwal mendatang.</div>
           ) : (
             <div className="divide-y divide-garis">
-              {jadwalMendatang.slice(0, 5).map(j => (
-                <div key={j.id} className="px-5 py-3.5 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-biru-muda rounded-xl flex items-center justify-center flex-shrink-0">
-                    <MdCalendarToday className="text-biru text-lg"/>
+              {jadwalMendatang.slice(0, 5).map(j => {
+                const reminder = reminderLabel(j.tanggal)
+                return (
+                  <div key={j.id} className="px-5 py-3.5 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-biru-muda rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MdCalendarToday className="text-biru text-lg"/>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-teks text-sm truncate">{j.jenis_perawatan}</p>
+                      <p className="text-xs text-teks-samping">{new Date(j.tanggal).toLocaleDateString('id-ID')} · {j.jam} · {j.dokter}</p>
+                    </div>
+                    {reminder && <Badge type={reminder === 'Hari ini' ? 'warning' : 'primary'}>{reminder}</Badge>}
+                    <Badge type={statusType[j.status]}>{j.status}</Badge>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-teks text-sm truncate">{j.jenis_perawatan}</p>
-                    <p className="text-xs text-teks-samping">{new Date(j.tanggal).toLocaleDateString('id-ID')} · {j.jam} · {j.dokter}</p>
-                  </div>
-                  <Badge type={statusType[j.status]}>{j.status}</Badge>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </Card>

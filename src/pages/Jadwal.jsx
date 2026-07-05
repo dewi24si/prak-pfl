@@ -9,13 +9,15 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { jadwalAPI, pasienAPI, pembayaranAPI, riwayatAPI } from '../services/supabaseAPI'
-import { tindakanList, hargaTindakan, POIN_PER_KUNJUNGAN } from '../data/tindakan'
-import { dokterList } from '../data/dokter'
+import { jadwalAPI, pasienAPI, pembayaranAPI, riwayatAPI, dokterAPI, tindakanAPI } from '../services/supabaseAPI'
+import { POIN_PER_KUNJUNGAN } from '../data/tindakan'
+import { cekJamOperasional, JAM_BUKA, JAM_TUTUP, NAMA_HARI_TUTUP } from '../data/klinik'
+import Pagination from '../components/Pagination'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const tabs         = ['All', 'Terjadwal', 'Selesai', 'Dibatalkan']
-const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', status: 'Terjadwal', catatan: '' }
+const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: '', tanggal: '', jam: '', jenis_perawatan: '', status: 'Terjadwal', catatan: '' }
+const PAGE_SIZE    = 10
 
 export default function Jadwal() {
   const [data, setData]           = useState([])
@@ -28,13 +30,27 @@ export default function Jadwal() {
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
+  const [page, setPage]           = useState(1)
   const [pasienList, setPasienList] = useState([])
+  const [dokterList, setDokterList]     = useState([])
+  const [tindakanList, setTindakanList] = useState([])
 
-  useEffect(() => { loadData(); loadPasien() }, [])
+  const hargaTindakan = Object.fromEntries(tindakanList.map(t => [t.nama, t.harga]))
+
+  useEffect(() => { loadData(); loadPasien(); loadMasterData() }, [])
+  useEffect(() => { setPage(1) }, [activeTab, search])
 
   const loadPasien = async () => {
     try { setPasienList(await pasienAPI.fetchAll()) }
     catch { /* dropdown pasien gagal dimuat, biarkan kosong */ }
+  }
+
+  const loadMasterData = async () => {
+    try {
+      const [d, t] = await Promise.all([dokterAPI.fetchAll(), tindakanAPI.fetchAll()])
+      setDokterList(d.filter(x => x.aktif))
+      setTindakanList(t.filter(x => x.aktif))
+    } catch { /* dropdown gagal dimuat, biarkan kosong */ }
   }
 
   const loadData = async () => {
@@ -51,7 +67,11 @@ export default function Jadwal() {
     setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
   }
 
-  const handleOpenAdd = () => { setEditId(null); setStatusAwal(null); setForm(emptyForm); setShowModal(true) }
+  const handleOpenAdd = () => {
+    setEditId(null); setStatusAwal(null)
+    setForm({ ...emptyForm, dokter: dokterList[0]?.nama || '', jenis_perawatan: tindakanList[0]?.nama || '' })
+    setShowModal(true)
+  }
   const handleOpenEdit = j => {
     setEditId(j.id)
     setStatusAwal(j.status)
@@ -62,6 +82,10 @@ export default function Jadwal() {
   const handleSubmit = async e => {
     e?.preventDefault()
     if (!form.pasien_id || !form.tanggal || !form.jam) return
+    if (!editId) {
+      const errJamOperasional = cekJamOperasional(form.tanggal, form.jam)
+      if (errJamOperasional) { setError(errJamOperasional); return }
+    }
     setLoading(true); setError('')
     try {
       // Cegah 1 dokter kebentur 2 jadwal di jam yang sama
@@ -137,8 +161,18 @@ export default function Jadwal() {
     (activeTab === 'All' || j.status === activeTab) &&
     j.nama_pasien?.toLowerCase().includes(search.toLowerCase())
   )
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const countByStatus = s => data.filter(j => j.status === s).length
+
+  const reminderLabel = tanggal => {
+    const hariIni = new Date().toISOString().split('T')[0]
+    const besok = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+    if (tanggal === hariIni) return 'Hari ini'
+    if (tanggal === besok) return 'Besok'
+    return null
+  }
 
   return (
     <div>
@@ -180,27 +214,36 @@ export default function Jadwal() {
         {!loading && filtered.length === 0 && <div className="text-center py-12 text-teks-samping text-sm">Belum ada data jadwal.</div>}
         {!loading && filtered.length > 0 && (
           <Table headers={['Pasien', 'Dokter', 'Tanggal', 'Jam', 'Perawatan', 'Status', 'Aksi']}>
-            {filtered.map(j => (
-              <tr key={j.id} className="hover:bg-latar transition-colors">
-                <td className="px-3 py-3.5 font-semibold text-teks">{j.nama_pasien}</td>
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.dokter}</td>
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-'}</td>
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jam}</td>
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jenis_perawatan}</td>
-                <td className="px-3 py-3.5"><Badge type={statusType[j.status]}>{j.status}</Badge></td>
-                <td className="px-3 py-3.5">
-                  <div className="flex gap-1.5">
-                    <button onClick={() => handleOpenEdit(j)} className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
-                    <button onClick={() => handleDelete(j.id)} className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {paged.map(j => {
+              const reminder = j.status === 'Terjadwal' ? reminderLabel(j.tanggal) : null
+              return (
+                <tr key={j.id} className="hover:bg-latar transition-colors">
+                  <td className="px-3 py-3.5 font-semibold text-teks">{j.nama_pasien}</td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.dokter}</td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">
+                    <div className="flex items-center gap-2">
+                      {j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-'}
+                      {reminder && <Badge type={reminder === 'Hari ini' ? 'warning' : 'primary'}>{reminder}</Badge>}
+                    </div>
+                  </td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jam}</td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jenis_perawatan}</td>
+                  <td className="px-3 py-3.5"><Badge type={statusType[j.status]}>{j.status}</Badge></td>
+                  <td className="px-3 py-3.5">
+                    <div className="flex gap-1.5">
+                      <button onClick={() => handleOpenEdit(j)} className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
+                      <button onClick={() => handleDelete(j.id)} className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </Table>
         )}
         <div className="px-5 py-4 border-t border-garis">
-          <p className="text-xs text-teks-samping">Showing {filtered.length} of {data.length} entries</p>
+          <p className="text-xs text-teks-samping">Showing {paged.length} of {filtered.length} entries</p>
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage}/>
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null); setStatusAwal(null) }}
@@ -210,12 +253,16 @@ export default function Jadwal() {
           <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
             options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
-            <InputField label="Jam" name="jam" type="time" value={form.jam} onChange={handleChange} required/>
+            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required
+              hint={!editId ? `Klinik tutup hari ${NAMA_HARI_TUTUP}` : undefined}/>
+            <InputField label="Jam" name="jam" type="time" value={form.jam} onChange={handleChange} required
+              hint={!editId ? `Jam operasional ${JAM_BUKA}-${JAM_TUTUP}` : undefined}/>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
-            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""
+            <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange}
+              options={dokterList.map(d => d.nama)} placeholder=""/>
+            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange}
+              options={tindakanList.map(t => t.nama)} placeholder=""
               hint={!editId ? `Tagihan otomatis: Rp ${(hargaTindakan[form.jenis_perawatan] || 0).toLocaleString('id-ID')}` : undefined}/>
           </div>
           <SelectField label="Status" name="status" value={form.status} onChange={handleChange} options={['Terjadwal','Selesai','Dibatalkan']} placeholder=""

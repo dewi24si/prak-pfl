@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import {
   MdDashboard, MdPerson, MdCalendarToday, MdPayment,
-  MdHistory, MdStars, MdBarChart, MdWidgets, MdManageAccounts,
+  MdHistory, MdStars, MdBarChart, MdWidgets, MdManageAccounts, MdInventory,
 } from 'react-icons/md'
 
 const menuItems = [
@@ -14,6 +14,7 @@ const menuItems = [
   { to: '/admin/riwayat',    Icon: MdHistory,         label: 'Riwayat Perawatan' },
   { to: '/admin/loyalitas',  Icon: MdStars,           label: 'Program Loyalitas' },
   { to: '/admin/laporan',    Icon: MdBarChart,        label: 'Laporan' },
+  { to: '/admin/master-data',Icon: MdInventory,       label: 'Master Data' },
   { to: '/admin/users',      Icon: MdManageAccounts,  label: 'Users' },
 ]
 

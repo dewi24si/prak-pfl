@@ -9,13 +9,14 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdReceiptLong, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { pembayaranAPI, pasienAPI } from '../services/supabaseAPI'
-import { tindakanList, hargaTindakan } from '../data/tindakan'
+import { pembayaranAPI, pasienAPI, tindakanAPI } from '../services/supabaseAPI'
+import Pagination from '../components/Pagination'
 
 const statusType   = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
 const tabs         = ['All', 'Lunas', 'Belum Lunas']
 const metodeBayar  = ['Cash', 'Transfer Bank', 'QRIS', 'BPJS', 'Kartu Kredit']
-const emptyForm    = { pasien_id: '', nama_pasien: '', jenis_perawatan: 'Scaling', tanggal: '', biaya: '', metode_bayar: 'Cash', status: 'Belum Lunas', catatan: '' }
+const emptyForm    = { pasien_id: '', nama_pasien: '', jenis_perawatan: '', tanggal: '', biaya: '', metode_bayar: 'Cash', status: 'Belum Lunas', catatan: '' }
+const PAGE_SIZE    = 10
 
 const formatRupiah = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : 'Rp 0'
 
@@ -29,13 +30,23 @@ export default function Pembayaran() {
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch]       = useState('')
+  const [page, setPage]           = useState(1)
   const [pasienList, setPasienList] = useState([])
+  const [tindakanList, setTindakanList] = useState([])
 
-  useEffect(() => { loadData(); loadPasien() }, [])
+  const hargaTindakan = Object.fromEntries(tindakanList.map(t => [t.nama, t.harga]))
+
+  useEffect(() => { loadData(); loadPasien(); loadTindakan() }, [])
+  useEffect(() => { setPage(1) }, [activeTab, search])
 
   const loadPasien = async () => {
     try { setPasienList(await pasienAPI.fetchAll()) }
     catch { /* dropdown pasien gagal dimuat, biarkan kosong */ }
+  }
+
+  const loadTindakan = async () => {
+    try { setTindakanList((await tindakanAPI.fetchAll()).filter(t => t.aktif)) }
+    catch { /* dropdown gagal dimuat, biarkan kosong */ }
   }
 
   const loadData = async () => {
@@ -59,7 +70,7 @@ export default function Pembayaran() {
     setForm({ ...form, pasien_id: id, nama_pasien: pasien?.nama_lengkap || '' })
   }
 
-  const handleOpenAdd  = () => { setEditId(null); setForm(emptyForm); setShowModal(true) }
+  const handleOpenAdd  = () => { setEditId(null); setForm({ ...emptyForm, jenis_perawatan: tindakanList[0]?.nama || '' }); setShowModal(true) }
   const handleOpenEdit = p => {
     setEditId(p.id)
     setForm({ pasien_id: p.pasien_id || '', nama_pasien: p.nama_pasien, jenis_perawatan: p.jenis_perawatan, tanggal: p.tanggal, biaya: p.biaya, metode_bayar: p.metode_bayar, status: p.status, catatan: p.catatan || '' })
@@ -92,6 +103,8 @@ export default function Pembayaran() {
     (activeTab === 'All' || p.status === activeTab) &&
     p.nama_pasien?.toLowerCase().includes(search.toLowerCase())
   )
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const totalLunas    = data.filter(p => p.status === 'Lunas').reduce((a, b) => a + Number(b.biaya), 0)
   const totalBelum    = data.filter(p => p.status === 'Belum Lunas').reduce((a, b) => a + Number(b.biaya), 0)
@@ -137,7 +150,7 @@ export default function Pembayaran() {
         {!loading && filtered.length === 0 && <div className="text-center py-12 text-teks-samping text-sm">Belum ada data pembayaran.</div>}
         {!loading && filtered.length > 0 && (
           <Table headers={['Pasien', 'Perawatan', 'Sumber', 'Tanggal', 'Biaya', 'Metode', 'Status', 'Aksi']}>
-            {filtered.map(p => (
+            {paged.map(p => (
               <tr key={p.id} className="hover:bg-latar transition-colors">
                 <td className="px-3 py-3.5 font-semibold text-teks">{p.nama_pasien}</td>
                 <td className="px-3 py-3.5 text-sm text-teks-samping">{p.jenis_perawatan}</td>
@@ -157,8 +170,9 @@ export default function Pembayaran() {
           </Table>
         )}
         <div className="px-5 py-4 border-t border-garis">
-          <p className="text-xs text-teks-samping">Showing {filtered.length} of {data.length} entries</p>
+          <p className="text-xs text-teks-samping">Showing {paged.length} of {filtered.length} entries</p>
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage}/>
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null) }}
@@ -168,7 +182,8 @@ export default function Pembayaran() {
           <SelectField label="Nama Pasien" name="pasien_id" value={form.pasien_id} onChange={handlePasienChange} required
             options={pasienList.map(p => ({ value: p.id, label: p.nama_lengkap }))} placeholder="Pilih pasien..."/>
           <div className="grid grid-cols-2 gap-4">
-            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleTindakanChange} options={tindakanList} placeholder=""/>
+            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleTindakanChange}
+              options={tindakanList.map(t => t.nama)} placeholder=""/>
             <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} required/>
           </div>
           <div className="grid grid-cols-2 gap-4">

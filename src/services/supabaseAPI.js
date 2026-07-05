@@ -213,6 +213,54 @@ export const pembayaranAPI = {
   },
 }
 
+// ─── TINDAKAN (master data jenis perawatan & harga) ───────────────────────────
+
+export const tindakanAPI = {
+  async fetchAll() {
+    const res = await axios.get(`${BASE_URL}/tindakan`, {
+      headers, params: { select: '*', order: 'nama.asc' },
+    })
+    return res.data
+  },
+  async create(data) {
+    const res = await axios.post(`${BASE_URL}/tindakan`, data, { headers })
+    return res.data[0]
+  },
+  async update(id, data) {
+    const res = await axios.patch(`${BASE_URL}/tindakan`, data, {
+      headers, params: { id: `eq.${id}` },
+    })
+    return res.data[0]
+  },
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/tindakan`, { headers, params: { id: `eq.${id}` } })
+  },
+}
+
+// ─── DOKTER (master data dokter) ──────────────────────────────────────────────
+
+export const dokterAPI = {
+  async fetchAll() {
+    const res = await axios.get(`${BASE_URL}/dokter`, {
+      headers, params: { select: '*', order: 'nama.asc' },
+    })
+    return res.data
+  },
+  async create(data) {
+    const res = await axios.post(`${BASE_URL}/dokter`, data, { headers })
+    return res.data[0]
+  },
+  async update(id, data) {
+    const res = await axios.patch(`${BASE_URL}/dokter`, data, {
+      headers, params: { id: `eq.${id}` },
+    })
+    return res.data[0]
+  },
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/dokter`, { headers, params: { id: `eq.${id}` } })
+  },
+}
+
 // ─── RIWAYAT ──────────────────────────────────────────────────────────────────
 
 export const riwayatAPI = {

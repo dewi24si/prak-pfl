@@ -9,36 +9,51 @@ import Table from '../../components/Table'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
 import { MdEventAvailable } from 'react-icons/md'
-import { pasienAPI, jadwalAPI, pembayaranAPI } from '../../services/supabaseAPI'
+import { pasienAPI, jadwalAPI, pembayaranAPI, dokterAPI, tindakanAPI } from '../../services/supabaseAPI'
 import { useAuth } from '../../context/useAuth'
-import { tindakanList, hargaTindakan } from '../../data/tindakan'
-import { dokterList } from '../../data/dokter'
+import { cekJamOperasional, JAM_BUKA, JAM_TUTUP, NAMA_HARI_TUTUP } from '../../data/klinik'
 
 const statusType     = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const bayarStatusType = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
-const emptyForm      = { dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', catatan: '' }
+const emptyForm      = { dokter: '', tanggal: '', jam: '', jenis_perawatan: '', catatan: '' }
 const formatRupiah   = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : 'Rp 0'
 const hariIni        = () => new Date().toISOString().split('T')[0]
 const jamSekarang    = () => new Date().toTimeString().slice(0, 5)
+const reminderLabel  = tanggal => {
+  const besok = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  if (tanggal === hariIni()) return 'Hari ini'
+  if (tanggal === besok) return 'Besok'
+  return null
+}
 
 export default function PasienBooking() {
   const { user } = useAuth()
   const [jadwal, setJadwal]       = useState([])
   const [pembayaran, setPembayaran] = useState([])
+  const [dokterList, setDokterList]     = useState([])
+  const [tindakanList, setTindakanList] = useState([])
   const [loading, setLoading]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]         = useState('')
   const [success, setSuccess]     = useState('')
   const [form, setForm]           = useState(emptyForm)
 
+  const hargaTindakan = Object.fromEntries(tindakanList.map(t => [t.nama, t.harga]))
+
   const loadData = useCallback(async () => {
     try {
       setLoading(true); setError('')
-      const [j, b] = await Promise.all([
+      const [j, b, d, t] = await Promise.all([
         jadwalAPI.fetchByPasien(user.pasienId),
         pembayaranAPI.fetchByPasien(user.pasienId),
+        dokterAPI.fetchAll(),
+        tindakanAPI.fetchAll(),
       ])
       setJadwal(j); setPembayaran(b)
+      const dokterAktif = d.filter(x => x.aktif)
+      const tindakanAktif = t.filter(x => x.aktif)
+      setDokterList(dokterAktif); setTindakanList(tindakanAktif)
+      setForm(f => ({ ...f, dokter: f.dokter || dokterAktif[0]?.nama || '', jenis_perawatan: f.jenis_perawatan || tindakanAktif[0]?.nama || '' }))
     }
     catch { setError('Gagal memuat jadwal') }
     finally { setLoading(false) }
@@ -57,6 +72,11 @@ export default function PasienBooking() {
     }
     if (form.tanggal === hariIni() && form.jam <= jamSekarang()) {
       setError('Jam booking untuk hari ini sudah lewat. Pilih jam lain atau tanggal berikutnya.')
+      return
+    }
+    const errJamOperasional = cekJamOperasional(form.tanggal, form.jam)
+    if (errJamOperasional) {
+      setError(errJamOperasional)
       return
     }
     setSubmitting(true); setError('')
@@ -129,12 +149,16 @@ export default function PasienBooking() {
         <h3 className="font-bold text-teks mb-4">Buat Booking Baru</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} min={hariIni()} required/>
-            <InputField label="Jam" name="jam" type="time" value={form.jam} onChange={handleChange} required/>
+            <InputField label="Tanggal" name="tanggal" type="date" value={form.tanggal} onChange={handleChange} min={hariIni()} required
+              hint={`Klinik tutup hari ${NAMA_HARI_TUTUP}`}/>
+            <InputField label="Jam" name="jam" type="time" value={form.jam} onChange={handleChange} required
+              hint={`Jam operasional ${JAM_BUKA}-${JAM_TUTUP}`}/>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
-            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""
+            <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange}
+              options={dokterList.map(d => d.nama)} placeholder=""/>
+            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange}
+              options={tindakanList.map(t => t.nama)} placeholder=""
               hint={`Estimasi biaya: Rp ${(hargaTindakan[form.jenis_perawatan] || 0).toLocaleString('id-ID')}`}/>
           </div>
           <InputField label="Catatan" name="catatan" value={form.catatan} onChange={handleChange} placeholder="Keluhan atau catatan tambahan (opsional)"/>
@@ -155,10 +179,16 @@ export default function PasienBooking() {
           <Table headers={['Dokter', 'Tanggal', 'Jam', 'Perawatan', 'Status', 'Pembayaran', 'Aksi']}>
             {jadwal.map(j => {
               const bayar = pembayaran.find(b => b.jadwal_id === j.id)
+              const reminder = j.status === 'Terjadwal' ? reminderLabel(j.tanggal) : null
               return (
                 <tr key={j.id} className="hover:bg-latar transition-colors">
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{j.dokter}</td>
-                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-'}</td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">
+                    <div className="flex items-center gap-2">
+                      {j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-'}
+                      {reminder && <Badge type={reminder === 'Hari ini' ? 'warning' : 'primary'}>{reminder}</Badge>}
+                    </div>
+                  </td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jam}</td>
                   <td className="px-3 py-3.5 font-semibold text-teks">{j.jenis_perawatan}</td>
                   <td className="px-3 py-3.5"><Badge type={statusType[j.status]}>{j.status}</Badge></td>
