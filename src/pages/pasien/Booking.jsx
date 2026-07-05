@@ -9,17 +9,20 @@ import Table from '../../components/Table'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
 import { MdEventAvailable } from 'react-icons/md'
-import { pasienAPI, jadwalAPI } from '../../services/supabaseAPI'
+import { pasienAPI, jadwalAPI, pembayaranAPI } from '../../services/supabaseAPI'
 import { useAuth } from '../../context/useAuth'
+import { tindakanList, hargaTindakan } from '../../data/tindakan'
 
-const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
-const tindakanList = ['Scaling', 'Tambal Gigi', 'Cabut Gigi', 'Konsultasi', 'Pemasangan Behel', 'Veneer', 'Bleaching', 'Implan']
-const dokterList   = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
-const emptyForm    = { dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', catatan: '' }
+const statusType     = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
+const bayarStatusType = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
+const dokterList     = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
+const emptyForm      = { dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', catatan: '' }
+const formatRupiah   = n => n ? `Rp ${Number(n).toLocaleString('id-ID')}` : 'Rp 0'
 
 export default function PasienBooking() {
   const { user } = useAuth()
   const [jadwal, setJadwal]       = useState([])
+  const [pembayaran, setPembayaran] = useState([])
   const [loading, setLoading]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]         = useState('')
@@ -27,7 +30,14 @@ export default function PasienBooking() {
   const [form, setForm]           = useState(emptyForm)
 
   const loadData = useCallback(async () => {
-    try { setLoading(true); setError(''); setJadwal(await jadwalAPI.fetchByPasien(user.pasienId)) }
+    try {
+      setLoading(true); setError('')
+      const [j, b] = await Promise.all([
+        jadwalAPI.fetchByPasien(user.pasienId),
+        pembayaranAPI.fetchByPasien(user.pasienId),
+      ])
+      setJadwal(j); setPembayaran(b)
+    }
     catch { setError('Gagal memuat jadwal') }
     finally { setLoading(false) }
   }, [user.pasienId])
@@ -42,7 +52,7 @@ export default function PasienBooking() {
     setSubmitting(true); setError('')
     try {
       const pasien = await pasienAPI.fetchById(user.pasienId)
-      await jadwalAPI.create({
+      const jadwalBaru = await jadwalAPI.create({
         pasien_id: user.pasienId,
         nama_pasien: pasien.nama_lengkap,
         dokter: form.dokter,
@@ -52,6 +62,20 @@ export default function PasienBooking() {
         status: 'Terjadwal',
         catatan: form.catatan,
       })
+
+      // Setiap booking otomatis membuat tagihan pembayarannya sendiri,
+      // supaya jadwal & pembayaran selalu terhubung sejak awal.
+      await pembayaranAPI.create({
+        pasien_id: user.pasienId,
+        nama_pasien: pasien.nama_lengkap,
+        jadwal_id: jadwalBaru.id,
+        tanggal: form.tanggal,
+        jenis_perawatan: form.jenis_perawatan,
+        biaya: hargaTindakan[form.jenis_perawatan] || 0,
+        metode_bayar: 'Cash',
+        status: 'Belum Lunas',
+      })
+
       setSuccess('Jadwal berhasil dibooking! Tunggu konfirmasi dari klinik.')
       setForm(emptyForm)
       loadData()
@@ -89,7 +113,8 @@ export default function PasienBooking() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
-            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""/>
+            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""
+              hint={`Estimasi biaya: Rp ${(hargaTindakan[form.jenis_perawatan] || 0).toLocaleString('id-ID')}`}/>
           </div>
           <InputField label="Catatan" name="catatan" value={form.catatan} onChange={handleChange} placeholder="Keluhan atau catatan tambahan (opsional)"/>
           <Button type="primary" icon={<MdEventAvailable/>} disabled={submitting}>
@@ -106,21 +131,32 @@ export default function PasienBooking() {
         {loading && <div className="flex items-center justify-center gap-3 py-10"><Spinner size="sm" color="biru"/><span className="text-sm text-teks-samping">Memuat data...</span></div>}
         {!loading && jadwal.length === 0 && <div className="text-center py-12 text-teks-samping text-sm">Belum ada jadwal.</div>}
         {!loading && jadwal.length > 0 && (
-          <Table headers={['Dokter', 'Tanggal', 'Jam', 'Perawatan', 'Status', 'Aksi']}>
-            {jadwal.map(j => (
-              <tr key={j.id} className="hover:bg-latar transition-colors">
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.dokter}</td>
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-'}</td>
-                <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jam}</td>
-                <td className="px-3 py-3.5 font-semibold text-teks">{j.jenis_perawatan}</td>
-                <td className="px-3 py-3.5"><Badge type={statusType[j.status]}>{j.status}</Badge></td>
-                <td className="px-3 py-3.5">
-                  {j.status === 'Terjadwal' && (
-                    <button onClick={() => handleCancel(j.id)} className="text-xs font-semibold text-merah hover:underline">Batalkan</button>
-                  )}
-                </td>
-              </tr>
-            ))}
+          <Table headers={['Dokter', 'Tanggal', 'Jam', 'Perawatan', 'Status', 'Pembayaran', 'Aksi']}>
+            {jadwal.map(j => {
+              const bayar = pembayaran.find(b => b.jadwal_id === j.id)
+              return (
+                <tr key={j.id} className="hover:bg-latar transition-colors">
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.dokter}</td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-'}</td>
+                  <td className="px-3 py-3.5 text-sm text-teks-samping">{j.jam}</td>
+                  <td className="px-3 py-3.5 font-semibold text-teks">{j.jenis_perawatan}</td>
+                  <td className="px-3 py-3.5"><Badge type={statusType[j.status]}>{j.status}</Badge></td>
+                  <td className="px-3 py-3.5">
+                    {bayar ? (
+                      <div className="flex items-center gap-2">
+                        <Badge type={bayarStatusType[bayar.status]}>{bayar.status}</Badge>
+                        <span className="text-xs text-teks-samping">{formatRupiah(bayar.biaya)}</span>
+                      </div>
+                    ) : '-'}
+                  </td>
+                  <td className="px-3 py-3.5">
+                    {j.status === 'Terjadwal' && (
+                      <button onClick={() => handleCancel(j.id)} className="text-xs font-semibold text-merah hover:underline">Batalkan</button>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
           </Table>
         )}
       </div>

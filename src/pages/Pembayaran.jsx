@@ -10,10 +10,10 @@ import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdReceiptLong, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
 import { pembayaranAPI, pasienAPI } from '../services/supabaseAPI'
+import { tindakanList } from '../data/tindakan'
 
 const statusType   = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
 const tabs         = ['All', 'Lunas', 'Belum Lunas']
-const tindakanList = ['Scaling', 'Tambal Gigi', 'Cabut Gigi', 'Konsultasi', 'Pemasangan Behel', 'Veneer', 'Bleaching', 'Implan']
 const metodeBayar  = ['Cash', 'Transfer Bank', 'QRIS', 'BPJS', 'Kartu Kredit']
 const emptyForm    = { pasien_id: '', nama_pasien: '', jenis_perawatan: 'Scaling', tanggal: '', biaya: '', metode_bayar: 'Cash', status: 'Belum Lunas', catatan: '' }
 
@@ -129,11 +129,12 @@ export default function Pembayaran() {
         {loading && <div className="flex items-center justify-center gap-3 py-10"><Spinner size="sm" color="biru"/><span className="text-sm text-teks-samping">Memuat data...</span></div>}
         {!loading && filtered.length === 0 && <div className="text-center py-12 text-teks-samping text-sm">Belum ada data pembayaran.</div>}
         {!loading && filtered.length > 0 && (
-          <Table headers={['Pasien', 'Perawatan', 'Tanggal', 'Biaya', 'Metode', 'Status', 'Aksi']}>
+          <Table headers={['Pasien', 'Perawatan', 'Sumber', 'Tanggal', 'Biaya', 'Metode', 'Status', 'Aksi']}>
             {filtered.map(p => (
               <tr key={p.id} className="hover:bg-latar transition-colors">
                 <td className="px-3 py-3.5 font-semibold text-teks">{p.nama_pasien}</td>
                 <td className="px-3 py-3.5 text-sm text-teks-samping">{p.jenis_perawatan}</td>
+                <td className="px-3 py-3.5"><Badge type={p.jadwal_id ? 'primary' : 'secondary'}>{p.jadwal_id ? 'Booking Jadwal' : 'Manual'}</Badge></td>
                 <td className="px-3 py-3.5 text-sm text-teks-samping">{p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-'}</td>
                 <td className="px-3 py-3.5 text-sm font-semibold text-teks">{formatRupiah(p.biaya)}</td>
                 <td className="px-3 py-3.5 text-sm text-teks-samping">{p.metode_bayar}</td>

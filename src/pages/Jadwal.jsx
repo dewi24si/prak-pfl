@@ -9,11 +9,11 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
-import { jadwalAPI, pasienAPI } from '../services/supabaseAPI'
+import { jadwalAPI, pasienAPI, pembayaranAPI } from '../services/supabaseAPI'
+import { tindakanList, hargaTindakan } from '../data/tindakan'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const tabs         = ['All', 'Terjadwal', 'Selesai', 'Dibatalkan']
-const tindakanList = ['Scaling', 'Tambal Gigi', 'Cabut Gigi', 'Konsultasi', 'Pemasangan Behel', 'Veneer', 'Bleaching', 'Implan']
 const dokterList   = ['drg. Sari', 'drg. Budi', 'drg. Rina', 'drg. Hendra']
 const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: 'drg. Sari', tanggal: '', jam: '', jenis_perawatan: 'Scaling', status: 'Terjadwal', catatan: '' }
 
@@ -62,8 +62,24 @@ export default function Jadwal() {
     if (!form.pasien_id || !form.tanggal || !form.jam) return
     setLoading(true); setError('')
     try {
-      editId ? await jadwalAPI.update(editId, form) : await jadwalAPI.create(form)
-      setSuccess(editId ? 'Jadwal berhasil diperbarui!' : 'Jadwal berhasil ditambahkan!')
+      if (editId) {
+        await jadwalAPI.update(editId, form)
+      } else {
+        const jadwalBaru = await jadwalAPI.create(form)
+        // Setiap jadwal baru otomatis membuat tagihan pembayarannya sendiri,
+        // supaya jadwal & pembayaran selalu terhubung sejak awal.
+        await pembayaranAPI.create({
+          pasien_id: form.pasien_id,
+          nama_pasien: form.nama_pasien,
+          jadwal_id: jadwalBaru.id,
+          tanggal: form.tanggal,
+          jenis_perawatan: form.jenis_perawatan,
+          biaya: hargaTindakan[form.jenis_perawatan] || 0,
+          metode_bayar: 'Cash',
+          status: 'Belum Lunas',
+        })
+      }
+      setSuccess(editId ? 'Jadwal berhasil diperbarui!' : 'Jadwal & tagihan pembayaran berhasil dibuat!')
       setShowModal(false); setForm(emptyForm); setEditId(null)
       loadData(); setTimeout(() => setSuccess(''), 3000)
     } catch (err) { setError('Gagal menyimpan: ' + err.message) }
@@ -160,7 +176,8 @@ export default function Jadwal() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <SelectField label="Dokter" name="dokter" value={form.dokter} onChange={handleChange} options={dokterList} placeholder=""/>
-            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""/>
+            <SelectField label="Jenis Perawatan" name="jenis_perawatan" value={form.jenis_perawatan} onChange={handleChange} options={tindakanList} placeholder=""
+              hint={!editId ? `Tagihan otomatis: Rp ${(hargaTindakan[form.jenis_perawatan] || 0).toLocaleString('id-ID')}` : undefined}/>
           </div>
           <SelectField label="Status" name="status" value={form.status} onChange={handleChange} options={['Terjadwal','Selesai','Dibatalkan']} placeholder=""/>
           <InputField label="Catatan" name="catatan" value={form.catatan} onChange={handleChange} placeholder="Catatan tambahan (opsional)"/>
