@@ -261,6 +261,44 @@ export const dokterAPI = {
   },
 }
 
+// ─── ODONTOGRAM (bagan gigi per pasien) ───────────────────────────────────────
+
+export const odontogramAPI = {
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/odontogram`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*' },
+    })
+    return res.data
+  },
+  // Simpan kondisi 1 gigi: insert kalau belum ada catatannya, update kalau sudah ada.
+  async upsert(pasien_id, nomor_gigi, data) {
+    const res = await axios.post(`${BASE_URL}/odontogram`,
+      { pasien_id, nomor_gigi, ...data },
+      { headers: { ...headers, Prefer: 'return=representation,resolution=merge-duplicates' },
+        params: { on_conflict: 'pasien_id,nomor_gigi' } },
+    )
+    return res.data[0]
+  },
+}
+
+// ─── LAMPIRAN (rekam medis: file rontgen/foto per pasien) ─────────────────────
+
+export const lampiranAPI = {
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/lampiran`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*', order: 'uploaded_at.desc' },
+    })
+    return res.data
+  },
+  async create(data) {
+    const res = await axios.post(`${BASE_URL}/lampiran`, data, { headers })
+    return res.data[0]
+  },
+  async delete(id) {
+    await axios.delete(`${BASE_URL}/lampiran`, { headers, params: { id: `eq.${id}` } })
+  },
+}
+
 // ─── RIWAYAT ──────────────────────────────────────────────────────────────────
 
 export const riwayatAPI = {

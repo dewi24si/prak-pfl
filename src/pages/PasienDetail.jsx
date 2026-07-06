@@ -5,6 +5,7 @@ import Card from '../components/Card'
 import Badge from '../components/Badge'
 import Avatar from '../components/Avatar'
 import Spinner from '../components/Spinner'
+import Odontogram from '../components/Odontogram'
 import { pasienAPI, jadwalAPI, riwayatAPI, pembayaranAPI } from '../services/supabaseAPI'
 
 const tierType     = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
@@ -128,6 +129,13 @@ export default function PasienDetail() {
             <p className="text-sm text-teks">{pasien.catatan_dokter}</p>
           </div>
         )}
+      </Card>
+
+      {/* Odontogram */}
+      <Card>
+        <h3 className="font-bold text-teks mb-1">Odontogram (Bagan Gigi)</h3>
+        <p className="text-xs text-teks-samping mb-2">Notasi FDI · klik gigi untuk mencatat kondisi & tindakan</p>
+        <Odontogram pasienId={id}/>
       </Card>
 
       {/* Jadwal pasien */}
