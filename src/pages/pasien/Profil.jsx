@@ -6,9 +6,10 @@ import Avatar from '../../components/Avatar'
 import Button from '../../components/Button'
 import InputField from '../../components/InputField'
 import SelectField from '../../components/SelectField'
+import TextArea from '../../components/TextArea'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
-import { MdStars } from 'react-icons/md'
+import { MdStars, MdWarning } from 'react-icons/md'
 import { pasienAPI } from '../../services/supabaseAPI'
 import { useAuth } from '../../context/useAuth'
 
@@ -49,6 +50,7 @@ export default function PasienProfil() {
         tanggal_lahir: form.tanggal_lahir,
         no_hp: form.no_hp,
         alamat: form.alamat,
+        alergi: form.alergi,
       })
       setPasien(updated)
       setSuccess('Profil berhasil diperbarui!')
@@ -102,6 +104,16 @@ export default function PasienProfil() {
 
       {error   && <div className="mb-4"><Alert type="danger"  message={error}   onClose={() => setError('')}/></div>}
       {success && <div className="mb-4"><Alert type="success" message={success} onClose={() => setSuccess('')}/></div>}
+
+      {pasien?.alergi && (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-kuning/40 bg-kuning/10 px-4 py-3">
+          <MdWarning className="text-kuning text-xl mt-0.5 shrink-0"/>
+          <div>
+            <p className="text-sm font-bold text-teks">Alergi / Catatan Medis Penting</p>
+            <p className="text-sm text-teks-samping">{pasien.alergi}</p>
+          </div>
+        </div>
+      )}
 
       <Card className="mb-6">
         <div className="flex items-center gap-4">
@@ -159,6 +171,9 @@ export default function PasienProfil() {
           </div>
           <InputField label="Alamat" name="alamat" value={form.alamat || ''}
             onChange={handleChange} placeholder="Alamat lengkap"/>
+          <TextArea label="Alergi / Catatan Medis Penting" name="alergi" value={form.alergi || ''}
+            onChange={handleChange} rows={2}
+            placeholder="misal: alergi anestesi lokal, penisilin, dll (kosongkan jika tidak ada)"/>
           <Button type="primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</Button>
         </form>
       </Card>

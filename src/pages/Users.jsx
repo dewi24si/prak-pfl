@@ -142,7 +142,7 @@ export default function Users() {
                 </td>
                 <td className="px-3 py-3.5 font-semibold text-teks">{u.email}</td>
                 <td className="px-3 py-3.5">
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${u.role === 'admin' ? 'bg-biru-muda text-biru' : 'bg-gray-100 text-gray-500'}`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${u.role === 'admin' ? 'bg-biru-muda text-biru' : u.role === 'dokter' ? 'bg-hijau-muda text-hijau' : 'bg-gray-100 text-gray-500'}`}>
                     {u.role}
                   </span>
                 </td>
@@ -192,8 +192,8 @@ export default function Users() {
             onChange={handleChange} placeholder="••••••••"
             hint="Minimal 8 karakter"/>
           <SelectField label="Role" name="role" value={form.role}
-            onChange={handleChange} options={['user', 'admin']} placeholder=""
-            hint={editId === currentUser.id ? 'Role akun sendiri tidak bisa diubah lewat sini' : undefined}/>
+            onChange={handleChange} options={['user', 'admin', 'dokter']} placeholder=""
+            hint={editId === currentUser.id ? 'Role akun sendiri tidak bisa diubah lewat sini' : 'Akun dokter perlu disambungkan ke profil dokter lewat Master Data agar bisa login'}/>
         </form>
       </Modal>
     </div>

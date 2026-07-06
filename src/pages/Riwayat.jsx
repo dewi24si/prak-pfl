@@ -8,10 +8,11 @@ import SelectField from '../components/SelectField'
 import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
-import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
+import { MdAddCircle, MdEdit, MdDelete, MdSearch, MdDownload } from 'react-icons/md'
 import { riwayatAPI, pasienAPI, dokterAPI, tindakanAPI } from '../services/supabaseAPI'
 import { POIN_PER_KUNJUNGAN } from '../data/tindakan'
 import Pagination from '../components/Pagination'
+import { exportToCSV } from '../utils/csv'
 
 const tindakanType = { 'Scaling':'primary','Tambal Gigi':'success','Konsultasi':'purple','Cabut Gigi':'danger','Pemasangan Behel':'warning','Veneer':'pink','Bleaching':'primary','Implan':'success' }
 const emptyForm    = { pasien_id: '', nama_pasien: '', dokter: '', tindakan: '', tanggal: '', biaya: '', catatan: '' }
@@ -118,10 +119,19 @@ export default function Riwayat() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const handleExportCSV = () => {
+    const headers = ['Pasien', 'Dokter', 'Tindakan', 'Tanggal', 'Biaya', 'Catatan']
+    const rows = filtered.map(r => [r.nama_pasien, r.dokter, r.tindakan, r.tanggal, r.biaya, r.catatan])
+    exportToCSV(`riwayat-${new Date().toISOString().slice(0,10)}.csv`, headers, rows)
+  }
+
   return (
     <div>
       <PageHeader title="Riwayat Perawatan" breadcrumb={['Beranda','Riwayat Perawatan']}>
-        <Button type="primary" icon={<MdAddCircle/>} onClick={handleOpenAdd}>Tambah Riwayat</Button>
+        <div className="flex gap-2">
+          <Button type="outline" icon={<MdDownload/>} onClick={handleExportCSV}>Export CSV</Button>
+          <Button type="primary" icon={<MdAddCircle/>} onClick={handleOpenAdd}>Tambah Riwayat</Button>
+        </div>
       </PageHeader>
 
       {error   && <div className="mb-4"><Alert type="danger"  message={error}   onClose={() => setError('')}/></div>}

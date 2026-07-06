@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { MdArrowBack, MdEmail, MdPhone, MdLocationOn, MdCalendarToday, MdMedicalServices, MdPerson, MdStar, MdPayment } from 'react-icons/md'
+import { MdArrowBack, MdEmail, MdPhone, MdLocationOn, MdCalendarToday, MdMedicalServices, MdPerson, MdStar, MdPayment, MdWarning } from 'react-icons/md'
 import Card from '../components/Card'
 import Badge from '../components/Badge'
 import Avatar from '../components/Avatar'
 import Spinner from '../components/Spinner'
+import Odontogram from '../components/Odontogram'
+import LampiranMedis from '../components/LampiranMedis'
 import { pasienAPI, jadwalAPI, riwayatAPI, pembayaranAPI } from '../services/supabaseAPI'
+import { useAuth } from '../context/useAuth'
 
 const tierType     = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
 const getTier      = p => p >= 100 ? 'Gold' : p >= 50 ? 'Silver' : 'Bronze'
@@ -29,6 +32,8 @@ function InfoItem({ icon, label, value }) {
 
 export default function PasienDetail() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const backTo = user?.role === 'dokter' ? '/dokter/pasien' : '/admin/pasien'
   const [pasien, setPasien]       = useState(null)
   const [jadwal, setJadwal]       = useState([])
   const [riwayat, setRiwayat]     = useState([])
@@ -72,7 +77,7 @@ export default function PasienDetail() {
     <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
       <MdPerson className="text-6xl text-teks-samping opacity-30"/>
       <p className="text-teks-samping font-medium">{error || 'Pasien tidak ditemukan.'}</p>
-      <Link to="/admin/pasien" className="text-biru text-sm font-semibold hover:underline">← Kembali ke Data Pasien</Link>
+      <Link to={backTo} className="text-biru text-sm font-semibold hover:underline">← Kembali ke Data Pasien</Link>
     </div>
   )
 
@@ -80,9 +85,19 @@ export default function PasienDetail() {
 
   return (
     <div className="space-y-4">
-      <Link to="/admin/pasien" className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
+      <Link to={backTo} className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
         <MdArrowBack/> Kembali ke Data Pasien
       </Link>
+
+      {pasien.alergi && (
+        <div className="flex items-start gap-2 rounded-lg border border-merah/40 bg-merah/10 px-4 py-3">
+          <MdWarning className="text-merah text-xl mt-0.5 shrink-0"/>
+          <div>
+            <p className="text-sm font-bold text-teks">Alergi / Catatan Medis Penting</p>
+            <p className="text-sm text-teks-samping">{pasien.alergi}</p>
+          </div>
+        </div>
+      )}
 
       {/* Header card */}
       <Card>
@@ -118,6 +133,20 @@ export default function PasienDetail() {
             <p className="text-sm text-teks">{pasien.catatan_dokter}</p>
           </div>
         )}
+      </Card>
+
+      {/* Odontogram */}
+      <Card>
+        <h3 className="font-bold text-teks mb-1">Odontogram (Bagan Gigi)</h3>
+        <p className="text-xs text-teks-samping mb-2">Notasi FDI · klik gigi untuk mencatat kondisi & tindakan</p>
+        <Odontogram pasienId={id}/>
+      </Card>
+
+      {/* Lampiran rekam medis */}
+      <Card>
+        <h3 className="font-bold text-teks mb-1">Rekam Medis: Rontgen & Foto</h3>
+        <p className="text-xs text-teks-samping mb-2">Unggah hasil rontgen atau foto klinis pasien</p>
+        <LampiranMedis pasienId={id}/>
       </Card>
 
       {/* Jadwal pasien */}

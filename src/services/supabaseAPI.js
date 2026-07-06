@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const BASE_URL = 'https://llgekpimncxzwrdsmics.supabase.co/rest/v1'
+const BASE_URL    = 'https://llgekpimncxzwrdsmics.supabase.co/rest/v1'
+const STORAGE_URL = 'https://llgekpimncxzwrdsmics.supabase.co/storage/v1'
 const API_KEY  = 'sb_publishable_2pwdotHDvSMDG0N3jzOxvA_T5os18GG'
 
 const headers = {
@@ -246,6 +247,12 @@ export const dokterAPI = {
     })
     return res.data
   },
+  async findByUserId(user_id) {
+    const res = await axios.get(`${BASE_URL}/dokter`, {
+      headers, params: { user_id: `eq.${user_id}`, select: '*' },
+    })
+    return res.data[0] || null
+  },
   async create(data) {
     const res = await axios.post(`${BASE_URL}/dokter`, data, { headers })
     return res.data[0]
@@ -258,6 +265,64 @@ export const dokterAPI = {
   },
   async delete(id) {
     await axios.delete(`${BASE_URL}/dokter`, { headers, params: { id: `eq.${id}` } })
+  },
+}
+
+// ─── ODONTOGRAM (bagan gigi per pasien) ───────────────────────────────────────
+
+export const odontogramAPI = {
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/odontogram`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*' },
+    })
+    return res.data
+  },
+  // Simpan kondisi 1 gigi: insert kalau belum ada catatannya, update kalau sudah ada.
+  async upsert(pasien_id, nomor_gigi, data) {
+    const res = await axios.post(`${BASE_URL}/odontogram`,
+      { pasien_id, nomor_gigi, ...data },
+      { headers: { ...headers, Prefer: 'return=representation,resolution=merge-duplicates' },
+        params: { on_conflict: 'pasien_id,nomor_gigi' } },
+    )
+    return res.data[0]
+  },
+}
+
+// ─── LAMPIRAN (rekam medis: file rontgen/foto per pasien) ─────────────────────
+
+const BUCKET = 'rekam-medis'
+
+export const lampiranAPI = {
+  async fetchByPasien(pasien_id) {
+    const res = await axios.get(`${BASE_URL}/lampiran`, {
+      headers, params: { pasien_id: `eq.${pasien_id}`, select: '*', order: 'uploaded_at.desc' },
+    })
+    return res.data
+  },
+  // Upload file mentah ke Supabase Storage, lalu catat metadatanya di tabel
+  // lampiran dengan URL publik supaya bisa langsung dibuka/ditampilkan.
+  async upload(pasien_id, file, { jenis = 'Lainnya', catatan = '' } = {}) {
+    const path = `${pasien_id}/${Date.now()}-${file.name}`
+    await axios.post(`${STORAGE_URL}/object/${BUCKET}/${path}`, file, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}`, 'Content-Type': file.type || 'application/octet-stream' },
+    })
+    const url = `${STORAGE_URL}/object/public/${BUCKET}/${path}`
+    const res = await axios.post(`${BASE_URL}/lampiran`,
+      { pasien_id, nama_file: file.name, url, jenis, catatan },
+      { headers },
+    )
+    return res.data[0]
+  },
+  // Hapus metadata sekaligus file fisiknya di Storage, supaya tidak ada file
+  // yatim yang tetap makan kuota walau catatannya sudah dihapus.
+  async delete(id, url) {
+    const path = url?.split(`/object/public/${BUCKET}/`)[1]
+    if (path) {
+      await axios.delete(`${STORAGE_URL}/object/${BUCKET}/${path}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` },
+      }).catch(() => { /* file storage sudah tidak ada / gagal dihapus, lanjutkan hapus metadata */ })
+    }
+    await axios.delete(`${BASE_URL}/lampiran`, { headers, params: { id: `eq.${id}` } })
   },
 }
 

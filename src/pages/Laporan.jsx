@@ -7,6 +7,7 @@ import Spinner from '../components/Spinner'
 import Alert from '../components/Alert'
 import { MdDownload, MdTrendingUp, MdPerson, MdPayment, MdCalendarToday, MdHelpOutline } from 'react-icons/md'
 import { pasienAPI, pembayaranAPI, riwayatAPI } from '../services/supabaseAPI'
+import { exportToCSV } from '../utils/csv'
 
 const formatRp = n => n >= 1000000 ? `Rp ${(n / 1000000).toFixed(1)}jt` : `Rp ${Number(n || 0).toLocaleString('id-ID')}`
 
@@ -108,10 +109,17 @@ export default function Laporan() {
 
   const handleDownload = () => window.print()
 
+  const handleExportCSV = () => {
+    const headers = ['Bulan', 'Pasien Baru', 'Tindakan', 'Pendapatan']
+    const rows = monthlyData.map(m => [m.bulan, m.pasien, m.tindakan, m.pendapatan])
+    exportToCSV(`laporan-rekap-${new Date().toISOString().slice(0,10)}.csv`, headers, rows)
+  }
+
   return (
     <div>
       <PageHeader title="Laporan" breadcrumb={['Beranda','Laporan']}>
-        <div className="print:hidden">
+        <div className="flex gap-2 print:hidden">
+          <Button type="outline" icon={<MdDownload/>} onClick={handleExportCSV}>Export CSV</Button>
           <Button type="primary" icon={<MdDownload/>} onClick={handleDownload}>Unduh Laporan</Button>
         </div>
       </PageHeader>

@@ -8,11 +8,12 @@ import SelectField from '../components/SelectField'
 import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
-import { MdAddCircle, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
+import { MdAddCircle, MdEdit, MdDelete, MdSearch, MdOutlineWhatsapp, MdDownload } from 'react-icons/md'
 import { jadwalAPI, pasienAPI, pembayaranAPI, riwayatAPI, dokterAPI, tindakanAPI } from '../services/supabaseAPI'
 import { POIN_PER_KUNJUNGAN } from '../data/tindakan'
-import { cekJamOperasional, JAM_BUKA, JAM_TUTUP, NAMA_HARI_TUTUP } from '../data/klinik'
+import { cekJamOperasional, JAM_BUKA, JAM_TUTUP, NAMA_HARI_TUTUP, buatLinkReminderWA } from '../data/klinik'
 import Pagination from '../components/Pagination'
+import { exportToCSV } from '../utils/csv'
 
 const statusType   = { Terjadwal: 'primary', Selesai: 'success', Dibatalkan: 'danger' }
 const tabs         = ['All', 'Terjadwal', 'Selesai', 'Dibatalkan']
@@ -174,10 +175,19 @@ export default function Jadwal() {
     return null
   }
 
+  const handleExportCSV = () => {
+    const headers = ['Nama Pasien', 'Dokter', 'Tanggal', 'Jam', 'Perawatan', 'Status', 'Catatan']
+    const rows = filtered.map(j => [j.nama_pasien, j.dokter, j.tanggal, j.jam, j.jenis_perawatan, j.status, j.catatan])
+    exportToCSV(`jadwal-${new Date().toISOString().slice(0,10)}.csv`, headers, rows)
+  }
+
   return (
     <div>
       <PageHeader title="Jadwal & Reminder" breadcrumb={['Beranda', 'Jadwal & Reminder']}>
-        <Button type="primary" icon={<MdAddCircle/>} onClick={handleOpenAdd}>Tambah Jadwal</Button>
+        <div className="flex gap-2">
+          <Button type="outline" icon={<MdDownload/>} onClick={handleExportCSV}>Export CSV</Button>
+          <Button type="primary" icon={<MdAddCircle/>} onClick={handleOpenAdd}>Tambah Jadwal</Button>
+        </div>
       </PageHeader>
 
       {error   && <div className="mb-4"><Alert type="danger"  message={error}   onClose={() => setError('')}/></div>}
@@ -216,6 +226,11 @@ export default function Jadwal() {
           <Table headers={['Pasien', 'Dokter', 'Tanggal', 'Jam', 'Perawatan', 'Status', 'Aksi']}>
             {paged.map(j => {
               const reminder = j.status === 'Terjadwal' ? reminderLabel(j.tanggal) : null
+              const pasienJ  = pasienList.find(p => String(p.id) === String(j.pasien_id))
+              const linkWA   = reminder ? buatLinkReminderWA({
+                noHp: pasienJ?.no_hp, namaPasien: j.nama_pasien, tanggal: j.tanggal,
+                jam: j.jam, dokter: j.dokter, jenisPerawatan: j.jenis_perawatan,
+              }) : null
               return (
                 <tr key={j.id} className="hover:bg-latar transition-colors">
                   <td className="px-3 py-3.5 font-semibold text-teks">{j.nama_pasien}</td>
@@ -231,6 +246,10 @@ export default function Jadwal() {
                   <td className="px-3 py-3.5"><Badge type={statusType[j.status]}>{j.status}</Badge></td>
                   <td className="px-3 py-3.5">
                     <div className="flex gap-1.5">
+                      {linkWA && (
+                        <a href={linkWA} target="_blank" rel="noopener noreferrer" title="Kirim reminder WhatsApp"
+                          className="p-1.5 rounded-lg hover:bg-hijau-muda text-teks-samping hover:text-hijau transition-colors"><MdOutlineWhatsapp/></a>
+                      )}
                       <button onClick={() => handleOpenEdit(j)} className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
                       <button onClick={() => handleDelete(j.id)} className="p-1.5 rounded-lg hover:bg-merah-muda text-teks-samping hover:text-merah transition-colors"><MdDelete/></button>
                     </div>
