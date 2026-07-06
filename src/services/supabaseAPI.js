@@ -247,6 +247,12 @@ export const dokterAPI = {
     })
     return res.data
   },
+  async findByUserId(user_id) {
+    const res = await axios.get(`${BASE_URL}/dokter`, {
+      headers, params: { user_id: `eq.${user_id}`, select: '*' },
+    })
+    return res.data[0] || null
+  },
   async create(data) {
     const res = await axios.post(`${BASE_URL}/dokter`, data, { headers })
     return res.data[0]

@@ -21,6 +21,9 @@ const routeTitles = {
   '/pasien/riwayat':    'Riwayat Perawatan',
   '/pasien/pembayaran': 'Pembayaran',
   '/pasien/profil':     'Profil Saya',
+  '/dokter/dashboard':  'Beranda',
+  '/dokter/jadwal':     'Jadwal Saya',
+  '/dokter/pasien':     'Pasien Saya',
 }
 
 const hariIni = () => new Date().toISOString().split('T')[0]
@@ -50,6 +53,10 @@ export default function Header() {
           const belumLunasCount = bayar.filter(b => b.status === 'Belum Lunas').length
           if (belumLunasCount > 0) items.push({ icon: MdPayment, text: `${belumLunasCount} pembayaran belum lunas`, to: '/admin/pembayaran' })
           setNotifItems(items)
+        } else if (user?.role === 'dokter' && user?.namaDokter) {
+          const jadwal = await jadwalAPI.fetchAll()
+          const hariIniCount = jadwal.filter(j => j.dokter === user.namaDokter && j.status === 'Terjadwal' && j.tanggal === hariIni()).length
+          setNotifItems(hariIniCount > 0 ? [{ icon: MdCalendarToday, text: `${hariIniCount} jadwal hari ini`, to: '/dokter/jadwal' }] : [])
         } else if (user?.pasienId) {
           const jadwal = await jadwalAPI.fetchByPasien(user.pasienId)
           const items = jadwal
@@ -64,7 +71,7 @@ export default function Header() {
       } catch { /* gagal memuat notifikasi, biarkan kosong */ }
     }
     loadNotif()
-  }, [user?.role, user?.pasienId])
+  }, [user?.role, user?.pasienId, user?.namaDokter])
 
   useEffect(() => {
     const handleClickOutside = e => {

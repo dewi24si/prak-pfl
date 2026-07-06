@@ -8,6 +8,7 @@ import Spinner from '../components/Spinner'
 import Odontogram from '../components/Odontogram'
 import LampiranMedis from '../components/LampiranMedis'
 import { pasienAPI, jadwalAPI, riwayatAPI, pembayaranAPI } from '../services/supabaseAPI'
+import { useAuth } from '../context/useAuth'
 
 const tierType     = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
 const getTier      = p => p >= 100 ? 'Gold' : p >= 50 ? 'Silver' : 'Bronze'
@@ -31,6 +32,8 @@ function InfoItem({ icon, label, value }) {
 
 export default function PasienDetail() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const backTo = user?.role === 'dokter' ? '/dokter/pasien' : '/admin/pasien'
   const [pasien, setPasien]       = useState(null)
   const [jadwal, setJadwal]       = useState([])
   const [riwayat, setRiwayat]     = useState([])
@@ -74,7 +77,7 @@ export default function PasienDetail() {
     <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
       <MdPerson className="text-6xl text-teks-samping opacity-30"/>
       <p className="text-teks-samping font-medium">{error || 'Pasien tidak ditemukan.'}</p>
-      <Link to="/admin/pasien" className="text-biru text-sm font-semibold hover:underline">← Kembali ke Data Pasien</Link>
+      <Link to={backTo} className="text-biru text-sm font-semibold hover:underline">← Kembali ke Data Pasien</Link>
     </div>
   )
 
@@ -82,7 +85,7 @@ export default function PasienDetail() {
 
   return (
     <div className="space-y-4">
-      <Link to="/admin/pasien" className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
+      <Link to={backTo} className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
         <MdArrowBack/> Kembali ke Data Pasien
       </Link>
 

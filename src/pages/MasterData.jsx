@@ -9,9 +9,9 @@ import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 import { MdAddCircle, MdEdit, MdDelete } from 'react-icons/md'
-import { dokterAPI, tindakanAPI } from '../services/supabaseAPI'
+import { dokterAPI, tindakanAPI, usersAPI } from '../services/supabaseAPI'
 
-const emptyDokter   = { nama: '', spesialisasi: '', aktif: true }
+const emptyDokter   = { nama: '', spesialisasi: '', aktif: true, akunEmail: '', akunPassword: '' }
 const emptyTindakan = { nama: '', harga: '', aktif: true }
 
 export default function MasterData() {
@@ -45,7 +45,7 @@ export default function MasterData() {
 
   const handleOpenEdit = item => {
     setEditId(item.id)
-    if (tab === 'dokter') setFormDokter({ nama: item.nama, spesialisasi: item.spesialisasi || '', aktif: item.aktif })
+    if (tab === 'dokter') setFormDokter({ nama: item.nama, spesialisasi: item.spesialisasi || '', aktif: item.aktif, user_id: item.user_id || null, akunEmail: '', akunPassword: '' })
     else setFormTindakan({ nama: item.nama, harga: item.harga, aktif: item.aktif })
     setShowModal(true)
   }
@@ -56,7 +56,16 @@ export default function MasterData() {
     try {
       if (tab === 'dokter') {
         if (!formDokter.nama) { setLoading(false); return }
-        editId ? await dokterAPI.update(editId, formDokter) : await dokterAPI.create(formDokter)
+        const { akunEmail, akunPassword, ...dokterPayload } = formDokter
+        // Kalau admin mengisi email+password dan dokter ini belum punya akun
+        // login, buatkan akun bertipe role 'dokter' dan langsung sambungkan.
+        if (akunEmail && akunPassword && !dokterPayload.user_id) {
+          const exists = await usersAPI.checkEmail(akunEmail)
+          if (exists) { setError('Email sudah terdaftar untuk akun lain.'); setLoading(false); return }
+          const akun = await usersAPI.register({ email: akunEmail, password: akunPassword, role: 'dokter' })
+          dokterPayload.user_id = akun.id
+        }
+        editId ? await dokterAPI.update(editId, dokterPayload) : await dokterAPI.create(dokterPayload)
       } else {
         if (!formTindakan.nama) { setLoading(false); return }
         const payload = { ...formTindakan, harga: Number(formTindakan.harga) || 0 }
@@ -107,12 +116,13 @@ export default function MasterData() {
         {!loading && data.length === 0 && <div className="text-center py-12 text-teks-samping text-sm">Belum ada data.</div>}
 
         {!loading && data.length > 0 && tab === 'dokter' && (
-          <Table headers={['Nama', 'Spesialisasi', 'Status', 'Aksi']}>
+          <Table headers={['Nama', 'Spesialisasi', 'Status', 'Akun Login', 'Aksi']}>
             {dokterList.map(d => (
               <tr key={d.id} className="hover:bg-latar transition-colors">
                 <td className="px-5 py-3.5 font-semibold text-teks">{d.nama}</td>
                 <td className="px-5 py-3.5 text-sm text-teks-samping">{d.spesialisasi || '-'}</td>
                 <td className="px-5 py-3.5"><Badge type={d.aktif ? 'success' : 'secondary'}>{d.aktif ? 'Aktif' : 'Nonaktif'}</Badge></td>
+                <td className="px-5 py-3.5"><Badge type={d.user_id ? 'success' : 'secondary'}>{d.user_id ? 'Terhubung' : 'Belum ada'}</Badge></td>
                 <td className="px-5 py-3.5">
                   <div className="flex gap-1.5">
                     <button onClick={() => handleOpenEdit(d)} className="p-1.5 rounded-lg hover:bg-biru-muda text-teks-samping hover:text-biru transition-colors"><MdEdit/></button>
@@ -158,6 +168,23 @@ export default function MasterData() {
               onChange={e => setFormDokter({ ...formDokter, aktif: e.target.value === 'Aktif' })}
               options={['Aktif', 'Nonaktif']} placeholder=""
               hint="Dokter nonaktif tidak muncul lagi di pilihan booking baru"/>
+
+            <div className="pt-2 border-t border-garis">
+              <p className="text-xs font-bold text-teks-samping uppercase tracking-wider mb-3">Akun Login Dokter</p>
+              {formDokter.user_id ? (
+                <p className="text-sm text-hijau font-medium">Dokter ini sudah punya akun login yang terhubung.</p>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-xs text-teks-samping">Opsional: isi untuk membuatkan akun login supaya dokter bisa masuk & melihat jadwal serta pasiennya sendiri.</p>
+                  <InputField label="Email Akun" name="akunEmail" type="email" value={formDokter.akunEmail}
+                    onChange={e => setFormDokter({ ...formDokter, akunEmail: e.target.value })}
+                    placeholder="dokter@klinik.com"/>
+                  <InputField label="Password Akun" name="akunPassword" type="password" value={formDokter.akunPassword}
+                    onChange={e => setFormDokter({ ...formDokter, akunPassword: e.target.value })}
+                    placeholder="••••••••" hint="Minimal 8 karakter"/>
+                </div>
+              )}
+            </div>
           </form>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 
 const MainLayout   = React.lazy(() => import('./layouts/MainLayout'))
 const PasienLayout = React.lazy(() => import('./layouts/PasienLayout'))
+const DokterLayout = React.lazy(() => import('./layouts/DokterLayout'))
 const AuthLayout   = React.lazy(() => import('./layouts/AuthLayout'))
 
 const Dashboard    = React.lazy(() => import('./pages/Dashboard'))
@@ -25,6 +26,10 @@ const PasienBooking    = React.lazy(() => import('./pages/pasien/Booking'))
 const PasienRiwayat    = React.lazy(() => import('./pages/pasien/Riwayat'))
 const PasienPembayaran = React.lazy(() => import('./pages/pasien/Pembayaran'))
 const PasienProfil     = React.lazy(() => import('./pages/pasien/Profil'))
+
+const DokterDashboard = React.lazy(() => import('./pages/dokter/Dashboard'))
+const DokterJadwal    = React.lazy(() => import('./pages/dokter/Jadwal'))
+const DokterPasien    = React.lazy(() => import('./pages/dokter/Pasien'))
 
 const Login        = React.lazy(() => import('./pages/auth/Login'))
 const Register     = React.lazy(() => import('./pages/auth/Register'))
@@ -59,6 +64,14 @@ export default function App() {
           <Route path="riwayat"     element={<PasienRiwayat />} />
           <Route path="pembayaran"  element={<PasienPembayaran />} />
           <Route path="profil"      element={<PasienProfil />} />
+        </Route>
+
+        <Route path="/dokter" element={<ProtectedRoute role="dokter"><DokterLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard"   element={<DokterDashboard />} />
+          <Route path="jadwal"      element={<DokterJadwal />} />
+          <Route path="pasien"      element={<DokterPasien />} />
+          <Route path="pasien/:id"  element={<PasienDetail />} />
         </Route>
 
         <Route element={<AuthLayout />}>

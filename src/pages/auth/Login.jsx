@@ -4,7 +4,7 @@ import InputField from '../../components/InputField'
 import Button from '../../components/Button'
 import Alert from '../../components/Alert'
 import Spinner from '../../components/Spinner'
-import { usersAPI, pasienAPI } from '../../services/supabaseAPI'
+import { usersAPI, pasienAPI, dokterAPI } from '../../services/supabaseAPI'
 import { useAuth } from '../../context/useAuth'
 
 export default function Login() {
@@ -26,6 +26,14 @@ export default function Login() {
       if (account.role === 'admin') {
         login(account, remember)
         navigate('/admin/dashboard')
+        return
+      }
+
+      if (account.role === 'dokter') {
+        const dokter = await dokterAPI.findByUserId(account.id)
+        if (!dokter) throw new Error('Akun ini belum terhubung ke profil dokter manapun. Hubungi admin klinik.')
+        login({ ...account, dokterId: dokter.id, namaDokter: dokter.nama }, remember)
+        navigate('/dokter/dashboard')
         return
       }
 
