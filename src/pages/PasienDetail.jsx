@@ -6,6 +6,7 @@ import Badge from '../components/Badge'
 import Avatar from '../components/Avatar'
 import Spinner from '../components/Spinner'
 import Odontogram from '../components/Odontogram'
+import LampiranMedis from '../components/LampiranMedis'
 import { pasienAPI, jadwalAPI, riwayatAPI, pembayaranAPI } from '../services/supabaseAPI'
 
 const tierType     = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
@@ -136,6 +137,13 @@ export default function PasienDetail() {
         <h3 className="font-bold text-teks mb-1">Odontogram (Bagan Gigi)</h3>
         <p className="text-xs text-teks-samping mb-2">Notasi FDI · klik gigi untuk mencatat kondisi & tindakan</p>
         <Odontogram pasienId={id}/>
+      </Card>
+
+      {/* Lampiran rekam medis */}
+      <Card>
+        <h3 className="font-bold text-teks mb-1">Rekam Medis: Rontgen & Foto</h3>
+        <p className="text-xs text-teks-samping mb-2">Unggah hasil rontgen atau foto klinis pasien</p>
+        <LampiranMedis pasienId={id}/>
       </Card>
 
       {/* Jadwal pasien */}

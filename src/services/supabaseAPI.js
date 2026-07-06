@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const BASE_URL = 'https://llgekpimncxzwrdsmics.supabase.co/rest/v1'
+const BASE_URL    = 'https://llgekpimncxzwrdsmics.supabase.co/rest/v1'
+const STORAGE_URL = 'https://llgekpimncxzwrdsmics.supabase.co/storage/v1'
 const API_KEY  = 'sb_publishable_2pwdotHDvSMDG0N3jzOxvA_T5os18GG'
 
 const headers = {
@@ -283,6 +284,8 @@ export const odontogramAPI = {
 
 // ─── LAMPIRAN (rekam medis: file rontgen/foto per pasien) ─────────────────────
 
+const BUCKET = 'rekam-medis'
+
 export const lampiranAPI = {
   async fetchByPasien(pasien_id) {
     const res = await axios.get(`${BASE_URL}/lampiran`, {
@@ -290,11 +293,29 @@ export const lampiranAPI = {
     })
     return res.data
   },
-  async create(data) {
-    const res = await axios.post(`${BASE_URL}/lampiran`, data, { headers })
+  // Upload file mentah ke Supabase Storage, lalu catat metadatanya di tabel
+  // lampiran dengan URL publik supaya bisa langsung dibuka/ditampilkan.
+  async upload(pasien_id, file, { jenis = 'Lainnya', catatan = '' } = {}) {
+    const path = `${pasien_id}/${Date.now()}-${file.name}`
+    await axios.post(`${STORAGE_URL}/object/${BUCKET}/${path}`, file, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}`, 'Content-Type': file.type || 'application/octet-stream' },
+    })
+    const url = `${STORAGE_URL}/object/public/${BUCKET}/${path}`
+    const res = await axios.post(`${BASE_URL}/lampiran`,
+      { pasien_id, nama_file: file.name, url, jenis, catatan },
+      { headers },
+    )
     return res.data[0]
   },
-  async delete(id) {
+  // Hapus metadata sekaligus file fisiknya di Storage, supaya tidak ada file
+  // yatim yang tetap makan kuota walau catatannya sudah dihapus.
+  async delete(id, url) {
+    const path = url?.split(`/object/public/${BUCKET}/`)[1]
+    if (path) {
+      await axios.delete(`${STORAGE_URL}/object/${BUCKET}/${path}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` },
+      }).catch(() => { /* file storage sudah tidak ada / gagal dihapus, lanjutkan hapus metadata */ })
+    }
     await axios.delete(`${BASE_URL}/lampiran`, { headers, params: { id: `eq.${id}` } })
   },
 }
