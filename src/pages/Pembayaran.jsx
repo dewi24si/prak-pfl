@@ -8,9 +8,10 @@ import SelectField from '../components/SelectField'
 import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
-import { MdReceiptLong, MdEdit, MdDelete, MdSearch } from 'react-icons/md'
+import { MdReceiptLong, MdEdit, MdDelete, MdSearch, MdDownload } from 'react-icons/md'
 import { pembayaranAPI, pasienAPI, tindakanAPI } from '../services/supabaseAPI'
 import Pagination from '../components/Pagination'
+import { exportToCSV } from '../utils/csv'
 
 const statusType   = { 'Lunas': 'success', 'Belum Lunas': 'warning' }
 const tabs         = ['All', 'Lunas', 'Belum Lunas']
@@ -110,10 +111,22 @@ export default function Pembayaran() {
   const totalBelum    = data.filter(p => p.status === 'Belum Lunas').reduce((a, b) => a + Number(b.biaya), 0)
   const totalSemua    = data.reduce((a, b) => a + Number(b.biaya), 0)
 
+  const handleExportCSV = () => {
+    const headers = ['Pasien', 'Perawatan', 'Sumber', 'Tanggal', 'Biaya', 'Metode Bayar', 'Status', 'Catatan']
+    const rows = filtered.map(p => [
+      p.nama_pasien, p.jenis_perawatan, p.jadwal_id ? 'Booking Jadwal' : 'Manual',
+      p.tanggal, p.biaya, p.metode_bayar, p.status, p.catatan,
+    ])
+    exportToCSV(`pembayaran-${new Date().toISOString().slice(0,10)}.csv`, headers, rows)
+  }
+
   return (
     <div>
       <PageHeader title="Pembayaran" breadcrumb={['Beranda', 'Pembayaran']}>
-        <Button type="primary" icon={<MdReceiptLong/>} onClick={handleOpenAdd}>Buat Kwitansi</Button>
+        <div className="flex gap-2">
+          <Button type="outline" icon={<MdDownload/>} onClick={handleExportCSV}>Export CSV</Button>
+          <Button type="primary" icon={<MdReceiptLong/>} onClick={handleOpenAdd}>Buat Kwitansi</Button>
+        </div>
       </PageHeader>
 
       {error   && <div className="mb-4"><Alert type="danger"  message={error}   onClose={() => setError('')}/></div>}

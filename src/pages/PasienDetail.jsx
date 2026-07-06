@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { MdArrowBack, MdEmail, MdPhone, MdLocationOn, MdCalendarToday, MdMedicalServices, MdPerson, MdStar, MdPayment } from 'react-icons/md'
+import { MdArrowBack, MdEmail, MdPhone, MdLocationOn, MdCalendarToday, MdMedicalServices, MdPerson, MdStar, MdPayment, MdWarning } from 'react-icons/md'
 import Card from '../components/Card'
 import Badge from '../components/Badge'
 import Avatar from '../components/Avatar'
@@ -83,6 +83,16 @@ export default function PasienDetail() {
       <Link to="/admin/pasien" className="inline-flex items-center gap-1.5 text-sm text-teks-samping hover:text-biru transition-colors">
         <MdArrowBack/> Kembali ke Data Pasien
       </Link>
+
+      {pasien.alergi && (
+        <div className="flex items-start gap-2 rounded-lg border border-merah/40 bg-merah/10 px-4 py-3">
+          <MdWarning className="text-merah text-xl mt-0.5 shrink-0"/>
+          <div>
+            <p className="text-sm font-bold text-teks">Alergi / Catatan Medis Penting</p>
+            <p className="text-sm text-teks-samping">{pasien.alergi}</p>
+          </div>
+        </div>
+      )}
 
       {/* Header card */}
       <Card>

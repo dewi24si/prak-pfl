@@ -6,13 +6,15 @@ import Avatar from '../components/Avatar'
 import Modal from '../components/Modal'
 import InputField from '../components/InputField'
 import SelectField from '../components/SelectField'
+import TextArea from '../components/TextArea'
 import Table from '../components/Table'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
-import { MdPersonAdd, MdEdit, MdDelete, MdSearch, MdVisibility } from 'react-icons/md'
+import { MdPersonAdd, MdEdit, MdDelete, MdSearch, MdVisibility, MdWarning, MdDownload } from 'react-icons/md'
 import { Link } from 'react-router-dom'
 import { pasienAPI, dokterAPI } from '../services/supabaseAPI'
 import Pagination from '../components/Pagination'
+import { exportToCSV } from '../utils/csv'
 
 const statusOptions = ['Aktif', 'Tidak Aktif']
 const loyalitasMap  = { Bronze: 'bronze', Silver: 'silver', Gold: 'gold' }
@@ -21,7 +23,7 @@ const PAGE_SIZE      = 10
 
 const emptyForm = {
   nama_lengkap: '', jenis_kelamin: 'Laki-laki', tanggal_lahir: '',
-  no_hp: '', email: '', alamat: '', status_pasien: 'Aktif',
+  no_hp: '', email: '', alamat: '', status_pasien: 'Aktif', alergi: '',
   keluhan_utama: '', riwayat_perawatan: '', jadwal_kontrol: '',
   dokter_penanggung_jawab: '', poin_loyalitas: 0,
   catatan_dokter: '',
@@ -81,6 +83,7 @@ export default function Pasien() {
       email: pasien.email || '',
       alamat: pasien.alamat || '',
       status_pasien: pasien.status_pasien || 'Aktif',
+      alergi: pasien.alergi || '',
       keluhan_utama: pasien.keluhan_utama || '',
       riwayat_perawatan: pasien.riwayat_perawatan || '',
       jadwal_kontrol: pasien.jadwal_kontrol || '',
@@ -151,12 +154,24 @@ export default function Pasien() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const handleExportCSV = () => {
+    const headers = ['Nama Lengkap', 'Email', 'No. HP', 'Jenis Kelamin', 'Alamat', 'Dokter Penanggung Jawab', 'Tier', 'Poin Loyalitas', 'Status', 'Alergi']
+    const rows = filtered.map(p => [
+      p.nama_lengkap, p.email, p.no_hp, p.jenis_kelamin, p.alamat,
+      p.dokter_penanggung_jawab, getTier(p.poin_loyalitas), p.poin_loyalitas || 0, p.status_pasien, p.alergi,
+    ])
+    exportToCSV(`data-pasien-${new Date().toISOString().slice(0,10)}.csv`, headers, rows)
+  }
+
   return (
     <div>
       <PageHeader title="Data Pasien" breadcrumb={['Beranda', 'Data Pasien']}>
-        <Button type="primary" icon={<MdPersonAdd/>} onClick={handleOpenAdd}>
-          Tambah Pasien Baru
-        </Button>
+        <div className="flex gap-2">
+          <Button type="outline" icon={<MdDownload/>} onClick={handleExportCSV}>Export CSV</Button>
+          <Button type="primary" icon={<MdPersonAdd/>} onClick={handleOpenAdd}>
+            Tambah Pasien Baru
+          </Button>
+        </div>
       </PageHeader>
 
       {error   && <div className="mb-4"><Alert type="danger"  message={error}   onClose={() => setError('')}/></div>}
@@ -198,7 +213,12 @@ export default function Pasien() {
               return (
                 <tr key={p.id} className="hover:bg-latar transition-colors">
                   <td className="px-3 py-3.5"><Avatar name={p.nama_lengkap} size="sm"/></td>
-                  <td className="px-3 py-3.5 font-semibold text-teks">{p.nama_lengkap}</td>
+                  <td className="px-3 py-3.5 font-semibold text-teks">
+                    <div className="flex items-center gap-1.5">
+                      {p.nama_lengkap}
+                      {p.alergi && <MdWarning className="text-kuning" title={`Alergi: ${p.alergi}`}/>}
+                    </div>
+                  </td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{p.email || '-'}</td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{p.no_hp || '-'}</td>
                   <td className="px-3 py-3.5 text-sm text-teks-samping">{p.dokter_penanggung_jawab || '-'}</td>
@@ -272,6 +292,9 @@ export default function Pasien() {
           </div>
           <InputField label="Alamat" name="alamat" value={form.alamat}
             onChange={handleChange} placeholder="Alamat lengkap pasien"/>
+          <TextArea label="Alergi / Catatan Medis Penting" name="alergi" value={form.alergi}
+            onChange={handleChange} rows={2}
+            placeholder="misal: alergi anestesi lokal, penisilin, dll (kosongkan jika tidak ada)"/>
 
           <p className="text-xs font-bold text-teks-samping uppercase tracking-wider pt-2 border-t border-garis">Data Klinis</p>
           <div className="grid grid-cols-2 gap-4">
