@@ -87,6 +87,19 @@ export const usersAPI = {
 
 // ─── PASIEN ───────────────────────────────────────────────────────────────────
 
+// Kolom bertipe date di tabel pasien: Postgres menolak string kosong ""
+// (harus null kalau memang belum diisi), jadi selalu disaring dulu di sini
+// sebelum dikirim, supaya form manapun yang membiarkan tanggal kosong tidak
+// menyebabkan error 400 saat simpan.
+const DATE_FIELDS = ['tanggal_lahir', 'jadwal_kontrol']
+function sanitizePasienDates(data) {
+  const cleaned = { ...data }
+  for (const field of DATE_FIELDS) {
+    if (cleaned[field] === '') cleaned[field] = null
+  }
+  return cleaned
+}
+
 export const pasienAPI = {
   async fetchAll() {
     const res = await axios.get(`${BASE_URL}/pasien`, {
@@ -122,12 +135,12 @@ export const pasienAPI = {
   },
 
   async create(data) {
-    const res = await axios.post(`${BASE_URL}/pasien`, data, { headers })
+    const res = await axios.post(`${BASE_URL}/pasien`, sanitizePasienDates(data), { headers })
     return res.data[0]
   },
 
   async update(id, data) {
-    const res = await axios.patch(`${BASE_URL}/pasien`, data, {
+    const res = await axios.patch(`${BASE_URL}/pasien`, sanitizePasienDates(data), {
       headers,
       params: { id: `eq.${id}` },
     })
